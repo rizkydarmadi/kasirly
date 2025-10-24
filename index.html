@@ -29,7 +29,6 @@
             background-color: #ffffff;
         }
 
-        /* --- PERUBAHAN HEADER (CSS SUDAH ADA DI KODE ANDA) --- */
         header {
             background-color: #007bff;
             color: white;
@@ -264,12 +263,10 @@
             border-bottom: 1px solid #eee;
         }
 
-        /* --- CSS BARU / MODIFIKASI UNTUK MODAL --- */
         #modal-cart-list li {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            /* Menengahkan item secara vertikal */
             padding: 12px 5px;
             border-bottom: 1px solid #f4f4f4;
         }
@@ -277,12 +274,10 @@
         #modal-cart-list .item-name {
             font-size: 0.9rem;
             flex: 2.5;
-            /* Beri lebih banyak ruang */
             margin-right: 5px;
             line-height: 1.3;
         }
 
-        /* Menggantikan .item-qty lama */
         #modal-cart-list .item-qty-controls {
             flex: 1.5;
             display: flex;
@@ -292,7 +287,6 @@
             font-weight: 600;
         }
 
-        /* STYLE BARU UNTUK TOMBOL QTY */
         .modal-qty-btn {
             background-color: #f0f2f5;
             border: none;
@@ -312,9 +306,6 @@
             background-color: #f9f9f9;
             cursor: not-allowed;
         }
-
-        /* --- AKHIR DARI CSS BARU --- */
-
 
         #modal-cart-list .item-total {
             font-size: 0.95rem;
@@ -374,7 +365,6 @@
             z-index: 2000;
         }
 
-        /* Style untuk tombol sync baru (SUDAH ADA DI KODE ANDA) */
         #sync-button {
             background-color: #fff;
             color: #007bff;
@@ -393,6 +383,143 @@
         #sync-button:hover {
             background-color: #f0f0f0;
         }
+
+        /* === CSS BARU UNTUK STRUK & PRINT === */
+
+        /* Style dasar untuk struk */
+        #receipt-container {
+            display: none;
+            /* Sembunyi secara default */
+            font-family: 'Courier New', Courier, monospace;
+            width: 300px;
+            /* Lebar umum struk thermal */
+            padding: 10px;
+            font-size: 12px;
+            color: #000;
+            background: #fff;
+        }
+
+        #receipt-container h3 {
+            text-align: center;
+            font-size: 14px;
+            margin: 0 0 5px 0;
+        }
+
+        #receipt-container p {
+            margin: 3px 0;
+            font-size: 11px;
+        }
+
+        #receipt-container hr {
+            border: none;
+            border-top: 1px dashed #000;
+            margin: 8px 0;
+        }
+
+        #receipt-container table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        #receipt-container th,
+        #receipt-container td {
+            padding: 3px 0;
+            vertical-align: top;
+        }
+
+        #receipt-container th {
+            border-bottom: 1px solid #000;
+            text-align: left;
+        }
+
+        #receipt-container .item-name {
+            width: 40%;
+            text-align: left;
+        }
+
+        #receipt-container .item-qty {
+            width: 15%;
+            text-align: center;
+        }
+
+        #receipt-container .item-price {
+            width: 20%;
+            text-align: right;
+        }
+
+        #receipt-container .subtotal {
+            width: 25%;
+            text-align: right;
+        }
+
+        #receipt-container .receipt-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        #receipt-container .receipt-footer {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 11px;
+        }
+
+        /* Aturan saat @media print dipicu */
+        @media print {
+
+            /* Sembunyikan semua elemen aplikasi utama */
+            body> :not(#receipt-container) {
+                display: none !important;
+            }
+
+            /* Tampilkan dan posisikan kontainer struk */
+            body {
+                margin: 0;
+                background: #fff;
+                /* Pastikan background putih */
+            }
+
+            #receipt-container {
+                display: block !important;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                /* Gunakan lebar penuh area print */
+            }
+
+            /* Atur margin halaman print */
+            @page {
+                margin: 5mm;
+            }
+        }
+
+        /* === AKHIR CSS STRUK === */
+
+        /* === CSS BARU UNTUK MODAL STATUS === */
+        #status-modal-message {
+            margin: 15px 0; 
+            line-height: 1.5;
+        }
+        
+        #status-modal-message strong {
+            color: #0056b3;
+        }
+
+        .modal-btn-primary {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .modal-btn-secondary {
+            background-color: #f4f4f4;
+            color: #555;
+            border: 1px solid #ccc;
+        }
+        /* === AKHIR CSS BARU === */
     </style>
 </head>
 
@@ -440,6 +567,40 @@
     </div>
     <div id="loading-overlay">Memuat Produk...</div>
 
+    <div id="receipt-container" style="display: none;">
+        <h3>Warung Adel</h3>
+        <p>ID Transaksi: <span id="receipt-id"></span></p>
+        <p>Tanggal: <span id="receipt-date"></span></p>
+        <hr>
+        <table id="receipt-items">
+            <thead>
+                <tr>
+                    <th class="item-name">Barang</th>
+                    <th class="item-qty">Qty</th>
+                    <th class="item-price">Harga</th>
+                    <th class="subtotal">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+        <hr>
+        <p class="receipt-total">
+            <strong>Total:</strong>
+            <strong id="receipt-total">Rp 0</strong>
+        </p>
+        <p class="receipt-footer">Terima kasih!</p>
+    </div>
+    <div class="modal-overlay" id="status-modal">
+        <div class="modal-content">
+            <h3 id="status-modal-title">Judul Status</h3>
+            <p id="status-modal-message">
+                Pesan status akan muncul di sini.
+            </p>
+            <div class="modal-actions" id="status-modal-actions">
+                </div>
+        </div>
+    </div>
     <script>
         // --- KONFIGURASI FRONTEND ---
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzwL3LPD1CEmhPmAiVM2OvAxuHNadFjcHZw2v3ErjVsn_6qI8vR9LUN52pdQ5QeD5jo/exec";
@@ -450,6 +611,9 @@
         let cart = [];
         let currentCategory = 'Semua';
         let currentSearch = '';
+
+        // === VARIABEL BARU UNTUK MENYIMPAN TRANSAKSI TERAKHIR ===
+        let lastTransactionData = { id: null, cart: [] };
 
         // --- Elemen DOM ---
         const productListEl = document.getElementById('product-list');
@@ -468,6 +632,21 @@
         const loadingOverlay = document.getElementById('loading-overlay');
         const syncButton = document.getElementById('sync-button');
 
+        // === ELEMEN DOM BARU UNTUK STRUK ===
+        const receiptIdEl = document.getElementById('receipt-id');
+        const receiptDateEl = document.getElementById('receipt-date');
+        const receiptItemsEl = document.getElementById('receipt-items').querySelector('tbody');
+        const receiptTotalEl = document.getElementById('receipt-total');
+        // === AKHIR ELEMEN DOM BARU ===
+
+        // === ELEMEN DOM BARU UNTUK MODAL STATUS ===
+        const statusModal = document.getElementById('status-modal');
+        const statusModalTitle = document.getElementById('status-modal-title');
+        const statusModalMessage = document.getElementById('status-modal-message');
+        const statusModalActions = document.getElementById('status-modal-actions');
+        // === AKHIR ELEMEN DOM BARU ===
+
+
         // --- Fungsi-Fungsi ---
 
         function formatRupiah(number) {
@@ -475,6 +654,91 @@
                 style: 'currency', currency: 'IDR', minimumFractionDigits: 0
             }).format(number);
         }
+
+        // === FUNGSI BARU UNTUK PRINT STRUK ===
+        function printReceipt(transactionId, printedCart) {
+            // 1. Siapkan data
+            const now = new Date();
+            const formattedDate = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+            let total = 0;
+
+            // 2. Isi header struk
+            receiptIdEl.textContent = transactionId;
+            receiptDateEl.textContent = formattedDate;
+
+            // 3. Kosongkan item lama dan isi item baru
+            receiptItemsEl.innerHTML = '';
+
+            printedCart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="item-name">${item.name}</td>
+                    <td class="item-qty">${item.quantity}</td>
+                    <td class="item-price">${formatRupiah(item.price)}</td>
+                    <td class="subtotal">${formatRupiah(itemTotal)}</td>
+                `;
+                receiptItemsEl.appendChild(tr);
+            });
+
+            // 4. Isi total
+            receiptTotalEl.textContent = formatRupiah(total);
+
+            // 5. Panggil dialog print browser
+            window.print();
+        }
+        // === AKHIR FUNGSI PRINT STRUK ===
+
+
+        // === FUNGSI BARU UNTUK MODAL STATUS ===
+
+        // Fungsi untuk menampilkan modal status
+        function showStatusModal(title, message, buttonsHtml) {
+            statusModalTitle.textContent = title;
+            statusModalMessage.innerHTML = message; // Pakai innerHTML agar bisa pakai tag <br> atau <strong>
+            statusModalActions.innerHTML = buttonsHtml;
+            statusModal.style.display = 'flex';
+        }
+
+        // Fungsi untuk menyembunyikan modal status
+        function hideStatusModal() {
+            statusModal.style.display = 'none';
+        }
+        
+        // Fungsi untuk menjalankan print dan menutup modal
+        function triggerPrintAndClose() {
+            if (lastTransactionData.id && lastTransactionData.cart.length > 0) {
+                printReceipt(lastTransactionData.id, lastTransactionData.cart);
+            }
+            hideStatusModal();
+            resetAfterCheckout(); // Panggil fungsi reset
+        }
+
+        // Fungsi untuk menutup modal dan reset (jika tidak jadi print)
+        function closeAndReset() {
+            hideStatusModal();
+            resetAfterCheckout(); // Panggil fungsi reset
+        }
+
+        // Fungsi yang menjalankan reset setelah checkout
+        function resetAfterCheckout() {
+            cart = []; 
+            updateCartSummary();
+            fetchProducts();
+            
+            // Kosongkan data transaksi terakhir
+            lastTransactionData = { id: null, cart: [] };
+        }
+        
+        // Fungsi untuk menutup modal (jika terjadi error)
+        function closeStatusModalOnError() {
+             hideStatusModal();
+             // Tidak perlu reset apa-apa jika error
+        }
+        // === AKHIR FUNGSI HELPER MODAL ===
+
 
         // 1. Muat Kategori ke Tampilan
         function loadCategories() {
@@ -558,7 +822,11 @@
             const cartQuantity = existingItem ? existingItem.quantity : 0;
 
             if (cartQuantity >= currentStock) {
-                alert(`Stok ${product.name} tidak mencukupi. Sisa stok: ${currentStock}`);
+                // Gunakan modal custom untuk error stok
+                const title = "Stok Tidak Cukup";
+                const message = `Stok ${product.name} tidak mencukupi. Sisa stok: ${currentStock}`;
+                const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
+                showStatusModal(title, message, buttonsHtml);
                 return;
             }
 
@@ -661,9 +929,12 @@
             checkoutModal.style.display = 'none';
         }
 
-        // 9. Proses "Bayar" (Checkout)
+        // 9. Proses "Bayar" (Checkout) - MENGGUNAKAN MODAL CUSTOM
         async function processCheckout() {
             if (cart.length === 0) return;
+
+            // Simpan cart untuk struk SEBELUM dihapus
+            const cartToPrint = JSON.parse(JSON.stringify(cart));
 
             hideCheckoutModal();
             loadingOverlay.style.display = 'flex';
@@ -682,30 +953,64 @@
                 const result = await response.json();
 
                 if (result.status === "success") {
-                    alert("Transaksi Berhasil! ID: " + result.transactionId);
-                    cart = [];
-                    updateCartSummary();
-                    // Muat ulang produk untuk update stok di tampilan
-                    fetchProducts();
+                    // --- TAMPILKAN MODAL SUKSES ---
+                    
+                    // 1. Simpan data transaksi ke variabel global
+                    lastTransactionData.id = result.transactionId;
+                    lastTransactionData.cart = cartToPrint;
+
+                    // 2. Siapkan konten modal
+                    const title = "Transaksi Berhasil!";
+                    const message = `ID Transaksi: <strong>${result.transactionId}</strong><br>Apakah Anda ingin mencetak struk?`;
+                    
+                    // 3. Siapkan tombol-tombol
+                    const buttonsHtml = `
+                        <button class="modal-btn-secondary" onclick="closeAndReset()">Selesai (Tanpa Struk)</button>
+                        <button class="modal-btn-primary" onclick="triggerPrintAndClose()">Cetak Struk</button>
+                    `;
+                    
+                    // 4. Tampilkan modal
+                    loadingOverlay.style.display = 'none'; // Sembunyikan loading dulu
+                    showStatusModal(title, message, buttonsHtml);
+
+                    // Reset cart akan dipanggil oleh fungsi tombol (closeAndReset / triggerPrintAndClose)
+
                 } else {
                     throw new Error(result.message);
                 }
 
             } catch (error) {
+                // --- TAMPILKAN MODAL ERROR ---
                 console.error('Error saat checkout:', error);
-                alert("Gagal memproses transaksi: " + error.message);
-            } finally {
-                loadingOverlay.style.display = 'none';
+                
+                const title = "Transaksi Gagal";
+                const message = `Terjadi kesalahan: ${error.message}. Silakan coba lagi.`;
+                const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
+                
+                loadingOverlay.style.display = 'none'; // Sembunyikan loading
+                showStatusModal(title, message, buttonsHtml);
             }
         }
-
+        
         // 10. FUNGSI RESET KERANJANG
         function resetCart() {
             if (cart.length === 0) return;
-            if (confirm("Apakah Anda yakin ingin mengosongkan keranjang?")) {
+            
+            // --- Gunakan Modal Custom untuk konfirmasi reset ---
+            const title = "Reset Keranjang";
+            const message = "Apakah Anda yakin ingin mengosongkan keranjang?";
+            const buttonsHtml = `
+                <button class="modal-btn-secondary" onclick="hideStatusModal()">Batal</button>
+                <button id="confirm-reset-button" class="modal-btn-primary" style="background-color:#dc3545;">Ya, Kosongkan</button>
+            `;
+            showStatusModal(title, message, buttonsHtml);
+
+            // Tambahkan event listener sekali jalan untuk tombol konfirmasi reset
+            document.getElementById('confirm-reset-button').addEventListener('click', () => {
                 cart = [];
                 updateCartSummary();
-            }
+                hideStatusModal();
+            }, { once: true }); // { once: true } agar listener otomatis hapus diri
         }
 
         // 11. FUNGSI MENGAMBIL PRODUK DARI GSHEET
@@ -729,7 +1034,11 @@
                 loadProducts();
             } catch (error) {
                 console.error('Error fetching products:', error);
-                alert("Gagal memuat produk. Cek koneksi atau URL Google Apps Script.");
+                // Tampilkan error pakai modal custom
+                const title = "Gagal Memuat Produk";
+                const message = `Gagal memuat produk. Cek koneksi atau URL Google Apps Script. (${error.message})`;
+                const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
+                showStatusModal(title, message, buttonsHtml);
                 productListEl.innerHTML = '<p>Gagal memuat produk.</p>';
             } finally {
                 loadingOverlay.style.display = 'none';
@@ -739,13 +1048,25 @@
         // --- Event Listeners ---
         searchBarEl.addEventListener('input', (e) => filterBySearch(e.target.value));
         checkoutButton.addEventListener('click', showCheckoutModal);
-        resetCartButton.addEventListener('click', resetCart);
+        resetCartButton.addEventListener('click', resetCart); // Fungsi resetCart sudah dimodifikasi
         cancelPaymentButton.addEventListener('click', hideCheckoutModal);
         confirmPaymentButton.addEventListener('click', processCheckout);
+        
         syncButton.addEventListener('click', () => {
-            if (confirm("Sinkronisasi ulang akan memuat data terbaru dari Google Sheet.\nLanjutkan?")) {
-                fetchProducts(true);
-            }
+            // --- Gunakan Modal Custom untuk konfirmasi sync ---
+             const title = "Sinkronisasi Ulang";
+             const message = "Sinkronisasi ulang akan memuat data terbaru dari Google Sheet.<br>Lanjutkan?";
+             const buttonsHtml = `
+                <button class="modal-btn-secondary" onclick="hideStatusModal()">Batal</button>
+                <button id="confirm-sync-button" class="modal-btn-primary">Lanjutkan</button>
+             `;
+             showStatusModal(title, message, buttonsHtml);
+             
+             // Tambahkan listener untuk tombol konfirmasi sync
+             document.getElementById('confirm-sync-button').addEventListener('click', () => {
+                 hideStatusModal();
+                 fetchProducts(true);
+             }, { once: true });
         });
 
         // --- LISTENER BARU UNTUK TOMBOL MODAL ---
