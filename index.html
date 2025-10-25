@@ -542,7 +542,6 @@
         header div {
             display: flex;
             gap: 10px;
-            /* Jarak antar tombol di header */
         }
 
         #add-product-button {
@@ -568,7 +567,6 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
-            /* Jarak antar isian */
             margin-top: 10px;
             overflow-y: auto;
             padding: 5px;
@@ -578,32 +576,23 @@
             display: flex;
             flex-direction: column;
             gap: 5px;
-            /* Jarak antara label dan input */
         }
 
-        /* === BARU: Grup form inline untuk tombol scan === */
         .form-group-inline {
             display: flex;
             gap: 10px;
             align-items: flex-end;
-            /* Menjajarkan input dan tombol */
         }
 
         .form-group-inline .form-group {
             flex-grow: 1;
-            /* Input memakan sisa ruang */
             margin: 0;
-            /* Hapus margin default jika ada */
         }
 
         .form-group-inline .scan-btn {
             height: 44px;
-            /* Samakan tinggi dengan input */
             margin-bottom: 2px;
-            /* Penyesuaian alignment */
         }
-
-        /* === AKHIR BARU === */
 
         .form-group label {
             font-weight: 600;
@@ -620,7 +609,7 @@
         }
 
 
-        /* === BARU: CSS Untuk Modal Scanner === */
+        /* === CSS Untuk Modal Scanner === */
         #scanner-modal .modal-content {
             max-height: 90vh;
             overflow: hidden;
@@ -633,28 +622,33 @@
             border: 1px solid #ddd;
             border-radius: 8px;
             overflow: hidden;
-            /* Penting */
         }
 
-        /* Ini akan menargetkan video di dalam library */
         #scanner-container video {
             width: 100% !important;
             height: auto !important;
         }
-
-        /* Ini akan menargetkan border/box pemindai */
-        #scanner-container #html5-qrcode-anchor-scan-type-change {
+        
+        /* === MODIFIKASI: Sembunyikan UI Bawaan Library === */
+        /* Sembunyikan dropdown "Select Camera" */
+        #scanner-container #html5-qrcode-header {
             display: none !important;
-            /* Sembunyikan tombol ganti kamera, bisa disesuaikan */
         }
+        /* Sembunyikan box putih panduan (tidak perlu lagi) */
+        #scanner-container .html5-qrcode-scanner-region {
+             border: none !important;
+        }
+        /* Sembunyikan link "Stop Scanning" */
+        #scanner-container #html5-qrcode-scan-region > button[data-qr-scanner-stop-scanning="true"] {
+             display: none !important;
+        }
+        /* === AKHIR MODIFIKASI === */
 
         #scanner-modal .modal-actions {
             margin-top: 15px;
-            grid-template-columns: 1fr;
-            /* Hanya satu tombol */
+            grid-template-columns: 1fr; /* Hanya satu tombol "Batal" */
         }
-
-        /* === AKHIR BARU === */
+        
     </style>
 </head>
 
@@ -796,13 +790,13 @@
         <div class="modal-content">
             <h3>Scan Barcode</h3>
             <div id="scanner-container">
-            </div>
+                </div>
             <div class="modal-actions">
                 <button id="cancel-scan-button" class="modal-btn-secondary">Batal</button>
             </div>
         </div>
     </div>
-
+    
     <script>
         // --- KONFIGURASI FRONTEND ---
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzwL3LPD1CEmhPmAiVM2OvAxuHNadFjcHZw2v3ErjVsn_6qI8vR9LUN52pdQ5QeD5jo/exec"; // <-- GANTI DENGAN URL SCRIPT-MU
@@ -870,7 +864,6 @@
         }
 
         function printReceipt(transactionId, printedCart) {
-            // (Tidak berubah)
             const now = new Date();
             const formattedDate = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
             let total = 0;
@@ -894,7 +887,6 @@
         }
 
         function showStatusModal(title, message, buttonsHtml) {
-            // (Tidak berubah)
             statusModalTitle.textContent = title;
             statusModalMessage.innerHTML = message;
             statusModalActions.innerHTML = buttonsHtml;
@@ -902,13 +894,11 @@
         }
 
         function hideStatusModal() {
-            // (Modifikasi: Tambah fokus)
             statusModal.style.display = 'none';
-            searchBarEl.focus(); // <-- FOKUS KEMBALI KE SEARCH
+            searchBarEl.focus(); 
         }
 
         function triggerPrintAndClose() {
-            // (Tidak berubah)
             if (lastTransactionData.id && lastTransactionData.cart.length > 0) {
                 printReceipt(lastTransactionData.id, lastTransactionData.cart);
             }
@@ -917,26 +907,22 @@
         }
 
         function closeAndReset() {
-            // (Tidak berubah)
             hideStatusModal();
             resetAfterCheckout();
         }
 
         function resetAfterCheckout() {
-            // (Tidak berubah)
             cart = [];
             updateCartSummary();
-            loadProducts(); // Load ulang produk untuk update stok visual
+            loadProducts(); 
             lastTransactionData = { id: null, cart: [] };
         }
 
         function closeStatusModalOnError() {
-            // (Tidak berubah)
             hideStatusModal();
         }
 
         function updateLocalStockAndCache(cartItems) {
-            // (Tidak berubah)
             console.log("Updating local stock and cache...");
             let productsUpdated = false;
             cartItems.forEach(item => {
@@ -965,7 +951,6 @@
         }
 
         function loadCategories() {
-            // (Tidak berubah)
             const uniqueCategories = [...new Set(allProducts.map(p => p.category))];
             const validUniqueCategories = uniqueCategories.filter(c => c && c.trim() !== '');
             categories = ['Semua', ...validUniqueCategories];
@@ -992,7 +977,6 @@
         }
 
         function loadProducts() {
-            // (Tidak berubah)
             productListEl.innerHTML = '';
             let filteredProducts = allProducts;
             if (currentCategory !== 'Semua') {
@@ -1030,7 +1014,6 @@
         }
 
         function filterByCategory(category) {
-            // (Tidak berubah)
             currentCategory = category;
             document.querySelectorAll('.category-filter button').forEach(btn => {
                 btn.classList.toggle('active', btn.getAttribute('data-category') === category);
@@ -1039,13 +1022,11 @@
         }
 
         function filterBySearch(searchTerm) {
-            // (Tidak berubah)
             currentSearch = searchTerm.toLowerCase();
             loadProducts();
         }
 
         function addToCart(productId) {
-            // (Tidak berubah)
             const product = allProducts.find(p => p.id === productId);
             if (!product) return;
             const existingItem = cart.find(item => item.id === productId);
@@ -1069,7 +1050,6 @@
         }
 
         function decrementCartItem(productId) {
-            // (Tidak berubah)
             const existingItem = cart.find(item => item.id === productId);
             if (!existingItem) return;
             existingItem.quantity--;
@@ -1082,7 +1062,6 @@
         }
 
         function updateCartSummary() {
-            // (Tidak berubah)
             let totalItems = 0;
             let totalPrice = 0;
             cart.forEach(item => {
@@ -1097,7 +1076,6 @@
         }
 
         function showCheckoutModal() {
-            // (Tidak berubah)
             modalCartListEl.innerHTML = '';
             let totalPrice = 0;
             const sortedCart = [...cart].reverse();
@@ -1127,13 +1105,11 @@
         }
 
         function hideCheckoutModal() {
-            // (Modifikasi: Tambah fokus)
             checkoutModal.style.display = 'none';
-            searchBarEl.focus(); // <-- FOKUS KEMBALI KE SEARCH
+            searchBarEl.focus(); 
         }
 
         async function processCheckout() {
-            // (Tidak berubah)
             if (cart.length === 0) return;
             const cartToPrint = JSON.parse(JSON.stringify(cart));
             hideCheckoutModal();
@@ -1141,7 +1117,7 @@
             loadingOverlay.textContent = 'Memproses...';
 
             try {
-                const payload = cart; // Ini adalah payload checkout
+                const payload = cart; 
                 const response = await fetch(GAS_URL, {
                     method: 'POST',
                     mode: 'cors',
@@ -1176,7 +1152,6 @@
         }
 
         function resetCart() {
-            // (Tidak berubah)
             if (cart.length === 0) return;
             const title = "Reset Keranjang";
             const message = "Apakah Anda yakin ingin mengosongkan keranjang?";
@@ -1193,7 +1168,6 @@
         }
 
         async function fetchProducts(forceSync = false) {
-            // (Tidak berubah)
             loadingOverlay.style.display = 'flex';
             loadingOverlay.textContent = forceSync ? 'Sinkronisasi Ulang...' : 'Memuat Produk...';
 
@@ -1263,19 +1237,15 @@
         }
 
 
-        // === FUNGSI handleSaveProduct (MODIFIKASI) ===
-        // Menggunakan ID dari form
         async function handleSaveProduct(e) {
             e.preventDefault();
 
-            // 1. Ambil data dari form
-            const productId = document.getElementById('new-product-id').value.trim(); // <-- MODIFIKASI
+            const productId = document.getElementById('new-product-id').value.trim();
             const productName = document.getElementById('new-product-name').value;
             const productPrice = parseFloat(document.getElementById('new-product-price').value);
             const productStock = parseInt(document.getElementById('new-product-stock').value);
             const productCategory = document.getElementById('new-product-category').value;
 
-            // Validasi (termasuk ID)
             if (!productId || !productName || !productCategory || isNaN(productPrice) || productPrice <= 0 || isNaN(productStock) || productStock < 0) {
                 const title = "Input Tidak Valid";
                 const message = "Pastikan Barcode (ID), Nama, Harga (angka positif), Stok (angka 0 atau lebih), dan Kategori sudah terisi dengan benar.";
@@ -1284,16 +1254,14 @@
                 return;
             }
 
-            // 2. Tampilkan loading
             addProductModal.style.display = 'none';
             loadingOverlay.style.display = 'flex';
             loadingOverlay.textContent = 'Menyimpan Barang...';
 
-            // 3. Buat payload untuk dikirim ke backend
             const payload = {
                 action: "addProduct",
                 product: {
-                    id: productId, // <-- MODIFIKASI
+                    id: productId,
                     name: productName,
                     price: productPrice,
                     category: productCategory,
@@ -1301,7 +1269,6 @@
                 }
             };
 
-            // 4. Kirim ke Google Apps Script (Sama seperti sebelumnya)
             try {
                 const response = await fetch(GAS_URL, {
                     method: 'POST',
@@ -1321,13 +1288,13 @@
 
                     document.getElementById('close-success-add-btn').addEventListener('click', () => {
                         hideStatusModal();
-                        fetchProducts(true); // Paksa sinkronisasi ulang
+                        fetchProducts(true); 
                     }, { once: true });
 
                     addProductForm.reset();
 
                 } else {
-                    throw new Error(result.message); // Akan menangkap error (misal: ID duplikat)
+                    throw new Error(result.message); 
                 }
 
             } catch (error) {
@@ -1339,32 +1306,34 @@
                 const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
                 showStatusModal(title, message, buttonsHtml);
 
-                addProductModal.style.display = 'flex'; // Tampilkan lagi modal form-nya
+                addProductModal.style.display = 'flex';
             }
         }
 
 
-        // === BARU: Fungsi-fungsi untuk Scanner ===
+        // === Fungsi-fungsi untuk Scanner ===
 
-        // Fungsi ini dipanggil ketika scan berhasil
         function onScanSuccess(decodedText, decodedResult) {
             console.log(`Scan berhasil: ${decodedText}`);
-
-            // Coba hentikan scanner. getState() mungkin error jika scanner belum penuh
+            
+            // Hentikan scanner-nya
             try {
                 if (html5QrcodeScanner && html5QrcodeScanner.getState() === Html5QrcodeScannerState.SCANNING) {
-                    html5QrcodeScanner.clear().catch(err => {
-                        console.error("Gagal menghentikan scanner:", err);
-                    });
+                    html5QrcodeScanner.stop()
+                        .then(() => {
+                            console.log("Scanner dihentikan setelah sukses.");
+                        })
+                        .catch(err => {
+                            console.warn("Gagal menghentikan scanner setelah sukses.", err);
+                        });
                 }
             } catch (e) {
                 console.warn("Gagal cek state scanner, mungkin sudah ditutup.", e);
             }
-
+           
             scannerModal.style.display = 'none'; // Tutup modal
 
             if (scannerPurpose === 'sell') {
-                // Logika untuk JUAL
                 const barcode = decodedText.trim();
                 const product = allProducts.find(p => p.id && p.id.toString().toLowerCase() === barcode.toLowerCase());
 
@@ -1378,48 +1347,44 @@
                 }
 
             } else if (scannerPurpose === 'add') {
-                // Logika untuk TAMBAH BARANG
                 document.getElementById('new-product-id').value = decodedText;
-                // Fokus ke field berikutnya
                 document.getElementById('new-product-name').focus();
             }
             scannerPurpose = null;
-            searchBarEl.focus(); // Kembalikan fokus
+            searchBarEl.focus(); 
         }
 
-        // Fungsi ini dipanggil jika scan gagal (opsional)
         function onScanFailure(error) {
-            // Ini akan sering terpanggil, biarkan di console saja
-            // console.warn(`Scan error = ${error}`);
+            // Biarkan kosong, tidak perlu log
         }
 
-        // Fungsi untuk menghentikan scanner & menutup modal
+        // Fungsi untuk tombol "Batal"
         function stopScanner() {
-            try {
-                if (html5QrcodeScanner && html5QrcodeScanner.getState() === Html5QrcodeScannerState.SCANNING) {
-                    html5QrcodeScanner.clear().catch(err => {
-                        console.error("Gagal menghentikan scanner:", err);
-                    });
+             try {
+                 if (html5QrcodeScanner && html5QrcodeScanner.getState() === Html5QrcodeScannerState.SCANNING) {
+                    html5QrcodeScanner.stop()
+                        .then(() => {
+                            console.log("Scanner dihentikan oleh tombol Batal.");
+                        })
+                        .catch(err => {
+                            console.warn("Gagal menghentikan scanner, mungkin sudah dihentikan.", err);
+                        });
                 }
             } catch (e) {
-                console.warn("Gagal cek state scanner saat membatalkan.", e);
+                 console.warn("Gagal cek state scanner saat membatalkan.", e);
             }
             scannerModal.style.display = 'none';
             scannerPurpose = null;
-            searchBarEl.focus(); // Kembalikan fokus ke search bar
+            searchBarEl.focus();
         }
-        // === AKHIR BARU ===
-
-
+        
         // --- Event Listeners ---
         searchBarEl.addEventListener('input', (e) => filterBySearch(e.target.value));
         checkoutButton.addEventListener('click', showCheckoutModal);
         resetCartButton.addEventListener('click', resetCart);
         cancelPaymentButton.addEventListener('click', hideCheckoutModal);
         confirmPaymentButton.addEventListener('click', processCheckout);
-
         syncButton.addEventListener('click', () => {
-            // (Tidak berubah)
             const title = "Sinkronisasi Ulang";
             const message = "Sinkronisasi ulang akan memuat data terbaru dari Google Sheet.<br>Lanjutkan?";
             const buttonsHtml = `
@@ -1434,7 +1399,6 @@
         });
 
         modalCartListEl.addEventListener('click', (e) => {
-            // (Tidak berubah)
             const target = e.target;
             if (target.classList.contains('modal-qty-plus')) {
                 const id = target.dataset.id;
@@ -1451,16 +1415,14 @@
         });
 
         addProductButton.addEventListener('click', () => {
-            // (Modifikasi: Fokus ke field ID)
             addProductModal.style.display = 'flex';
             document.getElementById('new-product-id').focus();
         });
 
         cancelAddProductButton.addEventListener('click', () => {
-            // (Modifikasi: Tambah fokus)
             addProductForm.reset();
             addProductModal.style.display = 'none';
-            searchBarEl.focus(); // <-- FOKUS KEMBALI KE SEARCH
+            searchBarEl.focus(); 
         });
 
         addProductForm.addEventListener('submit', handleSaveProduct);
@@ -1470,21 +1432,21 @@
         document.addEventListener('DOMContentLoaded', () => {
             fetchProducts();
             updateCartSummary();
-
-            searchBarEl.focus(); // Langsung fokus ke search bar saat aplikasi dimuat
+            
+            searchBarEl.focus(); 
 
             // --- KODE BARCODE SCANNING (USB/KEYBOARD) ---
-            searchBarEl.addEventListener('keypress', function (e) {
+            searchBarEl.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
-                    e.preventDefault();
+                    e.preventDefault(); 
                     const barcode = searchBarEl.value.trim();
-                    if (barcode === "") return;
+                    if (barcode === "") return; 
 
                     const product = allProducts.find(p => p.id && p.id.toString().toLowerCase() === barcode.toLowerCase());
 
                     if (product) {
                         addToCart(product.id);
-                        searchBarEl.value = '';
+                        searchBarEl.value = ''; 
                     } else {
                         const title = "Barang Tidak Ditemukan";
                         const message = `Barang dengan barcode/ID <strong>${barcode}</strong> tidak ditemukan.`;
@@ -1494,19 +1456,20 @@
                 }
             });
 
-            // === BARU: Inisialisasi dan Event Listener untuk SCANNER KAMERA ===
+            // === Inisialisasi dan Event Listener untuk SCANNER KAMERA ===
 
             // 1. Inisialisasi object scanner
             try {
-                html5QrcodeScanner = new Html5QrcodeScanner(
+                 html5QrcodeScanner = new Html5QrcodeScanner(
                     "scanner-container",
-                    {
-                        fps: 10,
-                        qrbox: { width: 250, height: 250 },
+                    { 
+                        fps: 10, 
+                        // === MODIFIKASI: qrbox DIHAPUS agar memindai fullscreen ===
+                        // qrbox: { width: 250, height: 250 }, 
+                        // === AKHIR MODIFIKASI ===
                         supportedScanTypes: [
                             Html5QrcodeScanType.SCAN_TYPE_CAMERA
                         ],
-                        // === MODIFIKASI: Ditambahkan untuk support 1D Barcode ===
                         formatsToSupport: [
                             Html5QrcodeSupportedFormats.QR_CODE,
                             Html5QrcodeSupportedFormats.EAN_13,
@@ -1515,26 +1478,22 @@
                             Html5QrcodeSupportedFormats.UPC_E,
                             Html5QrcodeSupportedFormats.CODE_128
                         ]
-                        // === AKHIR MODIFIKASI ===
                     },
                     /* verbose= */ false);
             } catch (err) {
                 console.error("Gagal inisialisasi html5QrcodeScanner:", err);
-                // Sembunyikan tombol scan jika gagal (misal di PC tanpa kamera)
                 scanForSellButton.style.display = 'none';
                 scanForAddButton.style.display = 'none';
             }
-
+            
             // 2. Listener untuk tombol "Scan Jual"
             scanForSellButton.addEventListener('click', () => {
                 scannerPurpose = 'sell';
                 scannerModal.style.display = 'flex';
-                // Mulai render kamera. `onScanSuccess` akan dipanggil jika berhasil
                 if (html5QrcodeScanner) {
-                    // Periksa izin kamera terlebih dahulu
                     Html5Qrcode.getCameras().then(devices => {
                         if (devices && devices.length) {
-                            html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+                             html5QrcodeScanner.render(onScanSuccess, onScanFailure);
                         } else {
                             alert("Kamera tidak ditemukan atau izin ditolak.");
                             stopScanner();
@@ -1554,10 +1513,9 @@
                 scannerPurpose = 'add';
                 scannerModal.style.display = 'flex';
                 if (html5QrcodeScanner) {
-                    // Periksa izin kamera terlebih dahulu
                     Html5Qrcode.getCameras().then(devices => {
                         if (devices && devices.length) {
-                            html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+                             html5QrcodeScanner.render(onScanSuccess, onScanFailure);
                         } else {
                             alert("Kamera tidak ditemukan atau izin ditolak.");
                             stopScanner();
@@ -1576,8 +1534,8 @@
             cancelScanButton.addEventListener('click', () => {
                 stopScanner();
             });
-
-        }); // <-- Ini adalah penutup 'DOMContentLoaded' yang hilang
+            
+        }); 
     </script>
 </body>
 
