@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kasir</title>
+
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -53,13 +55,41 @@
             z-index: 9;
         }
 
+        /* === BARU: Penyesuaian Search Bar === */
+        .search-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        /* === AKHIR BARU === */
+
         #search-bar {
             width: 100%;
             padding: 12px;
             font-size: 1rem;
             border: 1px solid #ccc;
             border-radius: 8px;
+            flex-grow: 1; /* BARU */
         }
+
+        /* === BARU: Tombol Scan === */
+        .scan-btn {
+            flex-shrink: 0;
+            width: 44px;
+            height: 44px;
+            padding: 10px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border: 1px solid #007bff;
+            background-color: #f0f8ff;
+            color: #007bff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* === AKHIR BARU === */
+
 
         .category-filter {
             display: flex;
@@ -424,7 +454,7 @@
         /* === AKHIR CSS MODAL STATUS === */
 
 
-        /* === CSS BARU UNTUK TOMBOL & FORM TAMBAH BARANG === */
+        /* === CSS UNTUK TOMBOL & FORM TAMBAH BARANG === */
         header div {
             display: flex;
             gap: 10px; /* Jarak antar tombol di header */
@@ -449,7 +479,6 @@
             background-color: #f0f0f0;
         }
 
-        /* Styling untuk form di modal */
         #add-product-form {
             display: flex;
             flex-direction: column;
@@ -465,6 +494,22 @@
             gap: 5px; /* Jarak antara label dan input */
         }
 
+        /* === BARU: Grup form inline untuk tombol scan === */
+        .form-group-inline {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end; /* Menjajarkan input dan tombol */
+        }
+        .form-group-inline .form-group {
+            flex-grow: 1; /* Input memakan sisa ruang */
+            margin: 0; /* Hapus margin default jika ada */
+        }
+        .form-group-inline .scan-btn {
+            height: 44px; /* Samakan tinggi dengan input */
+            margin-bottom: 2px; /* Penyesuaian alignment */
+        }
+        /* === AKHIR BARU === */
+
         .form-group label {
             font-weight: 600;
             font-size: 0.9rem;
@@ -478,7 +523,39 @@
             border: 1px solid #ccc;
             border-radius: 8px;
         }
-        /* === AKHIR CSS BARU === */
+
+
+        /* === BARU: CSS Untuk Modal Scanner === */
+        #scanner-modal .modal-content {
+            max-height: 90vh;
+            overflow: hidden;
+        }
+
+        #scanner-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden; /* Penting */
+        }
+
+        /* Ini akan menargetkan video di dalam library */
+        #scanner-container video {
+            width: 100% !important;
+            height: auto !important;
+        }
+
+        /* Ini akan menargetkan border/box pemindai */
+        #scanner-container #html5-qrcode-anchor-scan-type-change {
+            display: none !important; /* Sembunyikan tombol ganti kamera, bisa disesuaikan */
+        }
+
+        #scanner-modal .modal-actions {
+            margin-top: 15px;
+            grid-template-columns: 1fr; /* Hanya satu tombol */
+        }
+        /* === AKHIR BARU === */
 
     </style>
 </head>
@@ -496,7 +573,10 @@
         </header>
 
         <div class="search-filter-container">
-            <input type="search" id="search-bar" placeholder="Scan barcode atau cari nama barang...">
+            <div class="search-wrapper">
+                <input type="search" id="search-bar" placeholder="Scan barcode atau cari nama barang...">
+                <button id="scan-for-sell-button" class="scan-btn" title="Scan Barcode">&#128247;</button>
+            </div>
             <div class="category-filter" id="category-filter"></div>
         </div>
 
@@ -569,16 +649,18 @@
         </div>
     </div>
 
-
     <div class="modal-overlay" id="add-product-modal">
         <div class="modal-content">
             <h3>Tambah Barang Baru</h3>
             
             <form id="add-product-form">
                 
-                <div class="form-group">
-                    <label for="new-product-id">Barcode (ID):</label>
-                    <input type="text" id="new-product-id" required placeholder="Scan barcode atau ketik ID unik">
+                <div class="form-group-inline">
+                    <div class="form-group">
+                        <label for="new-product-id">Barcode (ID):</label>
+                        <input type="text" id="new-product-id" required placeholder="Scan atau ketik ID...">
+                    </div>
+                    <button type="button" id="scan-for-add-button" class="scan-btn" title="Scan Barcode">&#128247;</button>
                 </div>
                 <div class="form-group">
                     <label for="new-product-name">Nama Barang:</label>
@@ -608,6 +690,18 @@
             </form>
         </div>
     </div>
+
+
+    <div class="modal-overlay" id="scanner-modal">
+        <div class="modal-content">
+            <h3>Scan Barcode</h3>
+            <div id="scanner-container">
+                </div>
+            <div class="modal-actions">
+                <button id="cancel-scan-button" class="modal-btn-secondary">Batal</button>
+            </div>
+        </div>
+    </div>
     <script>
         // --- KONFIGURASI FRONTEND ---
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzwL3LPD1CEmhPmAiVM2OvAxuHNadFjcHZw2v3ErjVsn_6qI8vR9LUN52pdQ5QeD5jo/exec"; // <-- GANTI DENGAN URL SCRIPT-MU
@@ -621,6 +715,12 @@
         let currentCategory = 'Semua';
         let currentSearch = '';
         let lastTransactionData = { id: null, cart: [] };
+
+        // === BARU: Variabel untuk Scanner ===
+        let html5QrcodeScanner;
+        let scannerPurpose = null; // 'sell' atau 'add'
+        // === AKHIR BARU ===
+
 
         // --- Elemen DOM ---
         const productListEl = document.getElementById('product-list');
@@ -651,6 +751,14 @@
         const addProductForm = document.getElementById('add-product-form');
         const cancelAddProductButton = document.getElementById('cancel-add-product-button');
         const categoryDatalist = document.getElementById('category-list');
+
+        // === BARU: Elemen DOM untuk Scanner ===
+        const scannerModal = document.getElementById('scanner-modal');
+        const scanForSellButton = document.getElementById('scan-for-sell-button');
+        const scanForAddButton = document.getElementById('scan-for-add-button');
+        const cancelScanButton = document.getElementById('cancel-scan-button');
+        // === AKHIR BARU ===
+
 
         // --- Fungsi-Fungsi ---
 
@@ -1054,22 +1162,22 @@
         }
 
 
-        // === FUNGSI DIMODIFIKASI: handleSaveProduct ===
-        // Sekarang juga mengirim data ID dari form
+        // === FUNGSI handleSaveProduct (MODIFIKASI) ===
+        // Menggunakan ID dari form
         async function handleSaveProduct(e) {
             e.preventDefault(); 
 
             // 1. Ambil data dari form
-            const productId = document.getElementById('new-product-id').value.trim(); // <-- BARU
+            const productId = document.getElementById('new-product-id').value.trim(); // <-- MODIFIKASI
             const productName = document.getElementById('new-product-name').value;
             const productPrice = parseFloat(document.getElementById('new-product-price').value);
             const productStock = parseInt(document.getElementById('new-product-stock').value);
             const productCategory = document.getElementById('new-product-category').value;
 
             // Validasi (termasuk ID)
-            if (!productId || !productName || !productCategory || isNaN(productPrice) || productPrice <= 0 || isNaN(productStock) || productStock < 0) { // <-- DIMODIFIKASI
+            if (!productId || !productName || !productCategory || isNaN(productPrice) || productPrice <= 0 || isNaN(productStock) || productStock < 0) { 
                 const title = "Input Tidak Valid";
-                const message = "Pastikan Barcode (ID), Nama, Harga (angka positif), Stok (angka 0 atau lebih), dan Kategori sudah terisi dengan benar."; // <-- DIMODIFIKASI
+                const message = "Pastikan Barcode (ID), Nama, Harga (angka positif), Stok (angka 0 atau lebih), dan Kategori sudah terisi dengan benar.";
                 const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
                 showStatusModal(title, message, buttonsHtml);
                 return;
@@ -1084,7 +1192,7 @@
             const payload = {
                 action: "addProduct",
                 product: {
-                    id: productId, // <-- BARU
+                    id: productId, // <-- MODIFIKASI
                     name: productName,
                     price: productPrice,
                     category: productCategory,
@@ -1092,7 +1200,7 @@
                 }
             };
 
-            // 4. Kirim ke Google Apps Script
+            // 4. Kirim ke Google Apps Script (Sama seperti sebelumnya)
             try {
                 const response = await fetch(GAS_URL, {
                     method: 'POST',
@@ -1133,7 +1241,55 @@
                 addProductModal.style.display = 'flex'; // Tampilkan lagi modal form-nya
             }
         }
-        // === AKHIR FUNGSI DIMODIFIKASI ===
+
+
+        // === BARU: Fungsi-fungsi untuk Scanner ===
+        
+        // Fungsi ini dipanggil ketika scan berhasil
+        function onScanSuccess(decodedText, decodedResult) {
+            console.log(`Scan berhasil: ${decodedText}`);
+            stopScanner(); // Langsung matikan kamera dan tutup modal
+
+            if (scannerPurpose === 'sell') {
+                // Logika untuk JUAL
+                const barcode = decodedText.trim();
+                const product = allProducts.find(p => p.id && p.id.toString().toLowerCase() === barcode.toLowerCase());
+
+                if (product) {
+                    addToCart(product.id);
+                } else {
+                    const title = "Barang Tidak Ditemukan";
+                    const message = `Barang dengan barcode/ID <strong>${barcode}</strong> tidak ditemukan.`;
+                    const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
+                    showStatusModal(title, message, buttonsHtml);
+                }
+
+            } else if (scannerPurpose === 'add') {
+                // Logika untuk TAMBAH BARANG
+                document.getElementById('new-product-id').value = decodedText;
+                // Fokus ke field berikutnya
+                document.getElementById('new-product-name').focus();
+            }
+        }
+
+        // Fungsi ini dipanggil jika scan gagal (opsional)
+        function onScanFailure(error) {
+            // Ini akan sering terpanggil, biarkan di console saja
+            // console.warn(`Scan error = ${error}`);
+        }
+
+        // Fungsi untuk menghentikan scanner & menutup modal
+        function stopScanner() {
+            if (html5QrcodeScanner && html5QrcodeScanner.getState() === Html5QrcodeScannerState.SCANNING) {
+                html5QrcodeScanner.clear().catch(err => {
+                    console.error("Gagal menghentikan scanner:", err);
+                });
+            }
+            scannerModal.style.display = 'none';
+            scannerPurpose = null;
+            searchBarEl.focus(); // Kembalikan fokus ke search bar
+        }
+        // === AKHIR BARU ===
 
 
         // --- Event Listeners ---
@@ -1176,9 +1332,8 @@
         });
 
         addProductButton.addEventListener('click', () => {
-            // (Tidak berubah)
+            // (Modifikasi: Fokus ke field ID)
             addProductModal.style.display = 'flex';
-            // Fokus ke field ID baru
             document.getElementById('new-product-id').focus();
         });
 
@@ -1199,36 +1354,83 @@
             
             searchBarEl.focus(); // Langsung fokus ke search bar saat aplikasi dimuat
 
-            // --- KODE BARCODE SCANNING (TAMBAHAN BARU) ---
+            // --- KODE BARCODE SCANNING (USB/KEYBOARD) ---
             searchBarEl.addEventListener('keypress', function(e) {
-                // Hanya jalankan jika tombol 'Enter' ditekan
                 if (e.key === 'Enter') {
-                    e.preventDefault(); // Mencegah aksi default 'Enter' (misal: submit form)
+                    e.preventDefault(); 
                     const barcode = searchBarEl.value.trim();
-                    if (barcode === "") return; // Jangan lakukan apa-apa jika kosong
+                    if (barcode === "") return; 
 
-                    // Cari produk berdasarkan ID (barcode)
-                    // Kita pakai .find() agar lebih cepat dan case-insensitive
                     const product = allProducts.find(p => p.id && p.id.toString().toLowerCase() === barcode.toLowerCase());
 
                     if (product) {
-                        // Jika ketemu, langsung tambahkan ke keranjang
                         addToCart(product.id);
-                        searchBarEl.value = ''; // Kosongkan search bar
+                        searchBarEl.value = ''; 
                     } else {
-                        // Jika tidak ketemu, tampilkan notifikasi
                         const title = "Barang Tidak Ditemukan";
                         const message = `Barang dengan barcode/ID <strong>${barcode}</strong> tidak ditemukan.`;
                         const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
                         showStatusModal(title, message, buttonsHtml);
-                        // search bar akan otomatis fokus saat modal ditutup
                     }
                 }
             });
-            // --- AKHIR KODE BARCODE SCANNING ---
+
+            // === BARU: Inisialisasi dan Event Listener untuk SCANNER KAMERA ===
+
+            // 1. Inisialisasi object scanner
+            // "scanner-container" adalah ID dari div tempat kamera akan muncul
+            // Konfigurasi { fps: 10, qrbox: { width: 250, height: 250 } } artinya scan 10x/detik
+            // dengan kotak panduan 250x250 pixel.
+            try {
+                 html5QrcodeScanner = new Html5QrcodeScanner(
+                    "scanner-container",
+                    { 
+                        fps: 10, 
+                        qrbox: { width: 250, height: 250 },
+                        supportedScanTypes: [
+                            Html5QrcodeScanType.SCAN_TYPE_CAMERA // Hanya pakai kamera
+                        ]
+                    },
+                    /* verbose= */ false); // false = jangan tampilkan log sukses di console
+            } catch (err) {
+                console.error("Gagal inisialisasi html5QrcodeScanner:", err);
+                // Sembunyikan tombol scan jika gagal (misal di PC tanpa kamera)
+                scanForSellButton.style.display = 'none';
+                scanForAddButton.style.display = 'none';
+            }
+
+
+            // 2. Listener untuk tombol "Scan Jual"
+            scanForSellButton.addEventListener('click', () => {
+                scannerPurpose = 'sell';
+                scannerModal.style.display = 'flex';
+                // Mulai render kamera. `onScanSuccess` akan dipanggil jika berhasil
+                if (html5QrcodeScanner) {
+                    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+                } else {
+                    alert("Scanner tidak bisa dimulai.");
+                }
+            });
+
+            // 3. Listener untuk tombol "Scan Tambah"
+            scanForAddButton.addEventListener('click', () => {
+                scannerPurpose = 'add';
+                scannerModal.style.display = 'flex';
+                if (html5QrcodeScanner) {
+                    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+                } else {
+                    alert("Scanner tidak bisa dimulai.");
+                }
+            });
+
+            // 4. Listener untuk tombol "Batal" di modal scanner
+            cancelScanButton.addEventListener('click', () => {
+                stopScanner();
+            });
+
+            // === AKHIR BARU ===
         });
 
     </script>
 </body>
-
 </html>
