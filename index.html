@@ -7,6 +7,7 @@
     <title>Kasir</title>
 
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
     <style>
         * {
             box-sizing: border-box;
@@ -55,13 +56,11 @@
             z-index: 9;
         }
 
-        /* === BARU: Penyesuaian Search Bar === */
         .search-wrapper {
             display: flex;
             gap: 10px;
             align-items: center;
         }
-        /* === AKHIR BARU === */
 
         #search-bar {
             width: 100%;
@@ -69,10 +68,9 @@
             font-size: 1rem;
             border: 1px solid #ccc;
             border-radius: 8px;
-            flex-grow: 1; /* BARU */
+            flex-grow: 1;
         }
 
-        /* === BARU: Tombol Scan === */
         .scan-btn {
             flex-shrink: 0;
             width: 44px;
@@ -88,8 +86,6 @@
             align-items: center;
             justify-content: center;
         }
-        /* === AKHIR BARU === */
-
 
         .category-filter {
             display: flex;
@@ -424,40 +420,129 @@
             color: #000;
             background: #fff;
         }
-        #receipt-container h3 { text-align: center; font-size: 14px; margin: 0 0 5px 0; }
-        #receipt-container p { margin: 3px 0; font-size: 11px; }
-        #receipt-container hr { border: none; border-top: 1px dashed #000; margin: 8px 0; }
-        #receipt-container table { width: 100%; border-collapse: collapse; font-size: 11px; }
+
+        #receipt-container h3 {
+            text-align: center;
+            font-size: 14px;
+            margin: 0 0 5px 0;
+        }
+
+        #receipt-container p {
+            margin: 3px 0;
+            font-size: 11px;
+        }
+
+        #receipt-container hr {
+            border: none;
+            border-top: 1px dashed #000;
+            margin: 8px 0;
+        }
+
+        #receipt-container table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
         #receipt-container th,
-        #receipt-container td { padding: 3px 0; vertical-align: top; }
-        #receipt-container th { border-bottom: 1px solid #000; text-align: left; }
-        #receipt-container .item-name { width: 40%; text-align: left; }
-        #receipt-container .item-qty { width: 15%; text-align: center; }
-        #receipt-container .item-price { width: 20%; text-align: right; }
-        #receipt-container .subtotal { width: 25%; text-align: right; }
-        #receipt-container .receipt-total { display: flex; justify-content: space-between; font-size: 14px; font-weight: bold; margin-top: 10px; }
-        #receipt-container .receipt-footer { text-align: center; margin-top: 10px; font-size: 11px; }
+        #receipt-container td {
+            padding: 3px 0;
+            vertical-align: top;
+        }
+
+        #receipt-container th {
+            border-bottom: 1px solid #000;
+            text-align: left;
+        }
+
+        #receipt-container .item-name {
+            width: 40%;
+            text-align: left;
+        }
+
+        #receipt-container .item-qty {
+            width: 15%;
+            text-align: center;
+        }
+
+        #receipt-container .item-price {
+            width: 20%;
+            text-align: right;
+        }
+
+        #receipt-container .subtotal {
+            width: 25%;
+            text-align: right;
+        }
+
+        #receipt-container .receipt-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        #receipt-container .receipt-footer {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 11px;
+        }
 
         @media print {
-            body> :not(#receipt-container) { display: none !important; }
-            body { margin: 0; background: #fff; }
-            #receipt-container { display: block !important; position: absolute; top: 0; left: 0; width: 100%; }
-            @page { margin: 5mm; }
+            body> :not(#receipt-container) {
+                display: none !important;
+            }
+
+            body {
+                margin: 0;
+                background: #fff;
+            }
+
+            #receipt-container {
+                display: block !important;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+            }
+
+            @page {
+                margin: 5mm;
+            }
         }
+
         /* === AKHIR CSS STRUK === */
 
         /* === CSS MODAL STATUS === */
-        #status-modal-message { margin: 15px 0; line-height: 1.5; }
-        #status-modal-message strong { color: #0056b3; }
-        .modal-btn-primary { background-color: #28a745; color: white; }
-        .modal-btn-secondary { background-color: #f4f4f4; color: #555; border: 1px solid #ccc; }
+        #status-modal-message {
+            margin: 15px 0;
+            line-height: 1.5;
+        }
+
+        #status-modal-message strong {
+            color: #0056b3;
+        }
+
+        .modal-btn-primary {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .modal-btn-secondary {
+            background-color: #f4f4f4;
+            color: #555;
+            border: 1px solid #ccc;
+        }
+
         /* === AKHIR CSS MODAL STATUS === */
 
 
         /* === CSS UNTUK TOMBOL & FORM TAMBAH BARANG === */
         header div {
             display: flex;
-            gap: 10px; /* Jarak antar tombol di header */
+            gap: 10px;
+            /* Jarak antar tombol di header */
         }
 
         #add-product-button {
@@ -482,7 +567,8 @@
         #add-product-form {
             display: flex;
             flex-direction: column;
-            gap: 15px; /* Jarak antar isian */
+            gap: 15px;
+            /* Jarak antar isian */
             margin-top: 10px;
             overflow-y: auto;
             padding: 5px;
@@ -491,23 +577,32 @@
         .form-group {
             display: flex;
             flex-direction: column;
-            gap: 5px; /* Jarak antara label dan input */
+            gap: 5px;
+            /* Jarak antara label dan input */
         }
 
         /* === BARU: Grup form inline untuk tombol scan === */
         .form-group-inline {
             display: flex;
             gap: 10px;
-            align-items: flex-end; /* Menjajarkan input dan tombol */
+            align-items: flex-end;
+            /* Menjajarkan input dan tombol */
         }
+
         .form-group-inline .form-group {
-            flex-grow: 1; /* Input memakan sisa ruang */
-            margin: 0; /* Hapus margin default jika ada */
+            flex-grow: 1;
+            /* Input memakan sisa ruang */
+            margin: 0;
+            /* Hapus margin default jika ada */
         }
+
         .form-group-inline .scan-btn {
-            height: 44px; /* Samakan tinggi dengan input */
-            margin-bottom: 2px; /* Penyesuaian alignment */
+            height: 44px;
+            /* Samakan tinggi dengan input */
+            margin-bottom: 2px;
+            /* Penyesuaian alignment */
         }
+
         /* === AKHIR BARU === */
 
         .form-group label {
@@ -537,7 +632,8 @@
             margin: 0 auto;
             border: 1px solid #ddd;
             border-radius: 8px;
-            overflow: hidden; /* Penting */
+            overflow: hidden;
+            /* Penting */
         }
 
         /* Ini akan menargetkan video di dalam library */
@@ -548,15 +644,17 @@
 
         /* Ini akan menargetkan border/box pemindai */
         #scanner-container #html5-qrcode-anchor-scan-type-change {
-            display: none !important; /* Sembunyikan tombol ganti kamera, bisa disesuaikan */
+            display: none !important;
+            /* Sembunyikan tombol ganti kamera, bisa disesuaikan */
         }
 
         #scanner-modal .modal-actions {
             margin-top: 15px;
-            grid-template-columns: 1fr; /* Hanya satu tombol */
+            grid-template-columns: 1fr;
+            /* Hanya satu tombol */
         }
-        /* === AKHIR BARU === */
 
+        /* === AKHIR BARU === */
     </style>
 </head>
 
@@ -652,21 +750,22 @@
     <div class="modal-overlay" id="add-product-modal">
         <div class="modal-content">
             <h3>Tambah Barang Baru</h3>
-            
+
             <form id="add-product-form">
-                
+
                 <div class="form-group-inline">
                     <div class="form-group">
                         <label for="new-product-id">Barcode (ID):</label>
                         <input type="text" id="new-product-id" required placeholder="Scan atau ketik ID...">
                     </div>
-                    <button type="button" id="scan-for-add-button" class="scan-btn" title="Scan Barcode">&#128247;</button>
+                    <button type="button" id="scan-for-add-button" class="scan-btn"
+                        title="Scan Barcode">&#128247;</button>
                 </div>
                 <div class="form-group">
                     <label for="new-product-name">Nama Barang:</label>
                     <input type="text" id="new-product-name" required>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="new-product-price">Harga (Rp):</label>
                     <input type="number" id="new-product-price" min="0" step="50" required>
@@ -678,11 +777,12 @@
                 </div>
                 <div class="form-group">
                     <label for="new-product-category">Kategori:</label>
-                    <input list="category-list" id="new-product-category" required autocomplete="off" placeholder="Pilih atau ketik baru...">
+                    <input list="category-list" id="new-product-category" required autocomplete="off"
+                        placeholder="Pilih atau ketik baru...">
                     <datalist id="category-list">
                     </datalist>
                 </div>
-                
+
                 <div class="modal-actions">
                     <button type="button" id="cancel-add-product-button" class="modal-btn-secondary">Batal</button>
                     <button type="submit" id="save-product-button" class="modal-btn-primary">Simpan Barang</button>
@@ -696,12 +796,13 @@
         <div class="modal-content">
             <h3>Scan Barcode</h3>
             <div id="scanner-container">
-                </div>
+            </div>
             <div class="modal-actions">
                 <button id="cancel-scan-button" class="modal-btn-secondary">Batal</button>
             </div>
         </div>
     </div>
+
     <script>
         // --- KONFIGURASI FRONTEND ---
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzwL3LPD1CEmhPmAiVM2OvAxuHNadFjcHZw2v3ErjVsn_6qI8vR9LUN52pdQ5QeD5jo/exec"; // <-- GANTI DENGAN URL SCRIPT-MU
@@ -1165,7 +1266,7 @@
         // === FUNGSI handleSaveProduct (MODIFIKASI) ===
         // Menggunakan ID dari form
         async function handleSaveProduct(e) {
-            e.preventDefault(); 
+            e.preventDefault();
 
             // 1. Ambil data dari form
             const productId = document.getElementById('new-product-id').value.trim(); // <-- MODIFIKASI
@@ -1175,7 +1276,7 @@
             const productCategory = document.getElementById('new-product-category').value;
 
             // Validasi (termasuk ID)
-            if (!productId || !productName || !productCategory || isNaN(productPrice) || productPrice <= 0 || isNaN(productStock) || productStock < 0) { 
+            if (!productId || !productName || !productCategory || isNaN(productPrice) || productPrice <= 0 || isNaN(productStock) || productStock < 0) {
                 const title = "Input Tidak Valid";
                 const message = "Pastikan Barcode (ID), Nama, Harga (angka positif), Stok (angka 0 atau lebih), dan Kategori sudah terisi dengan benar.";
                 const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
@@ -1212,7 +1313,7 @@
 
                 if (result.status === "success") {
                     loadingOverlay.style.display = 'none';
-                    
+
                     const title = "Berhasil!";
                     const message = `Barang <strong>${productName}</strong> (ID: ${result.newId}) berhasil ditambahkan.<br>Memuat ulang daftar produk...`;
                     const buttonsHtml = `<button id="close-success-add-btn" class="modal-btn-primary" style="grid-column: 1 / -1;">OK</button>`;
@@ -1223,7 +1324,7 @@
                         fetchProducts(true); // Paksa sinkronisasi ulang
                     }, { once: true });
 
-                    addProductForm.reset(); 
+                    addProductForm.reset();
 
                 } else {
                     throw new Error(result.message); // Akan menangkap error (misal: ID duplikat)
@@ -1232,7 +1333,7 @@
             } catch (error) {
                 console.error('Error saat tambah produk:', error);
                 loadingOverlay.style.display = 'none';
-                
+
                 const title = "Gagal Menyimpan";
                 const message = `Terjadi kesalahan: ${error.message}. Silakan coba lagi.`;
                 const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
@@ -1244,11 +1345,23 @@
 
 
         // === BARU: Fungsi-fungsi untuk Scanner ===
-        
+
         // Fungsi ini dipanggil ketika scan berhasil
         function onScanSuccess(decodedText, decodedResult) {
             console.log(`Scan berhasil: ${decodedText}`);
-            stopScanner(); // Langsung matikan kamera dan tutup modal
+
+            // Coba hentikan scanner. getState() mungkin error jika scanner belum penuh
+            try {
+                if (html5QrcodeScanner && html5QrcodeScanner.getState() === Html5QrcodeScannerState.SCANNING) {
+                    html5QrcodeScanner.clear().catch(err => {
+                        console.error("Gagal menghentikan scanner:", err);
+                    });
+                }
+            } catch (e) {
+                console.warn("Gagal cek state scanner, mungkin sudah ditutup.", e);
+            }
+
+            scannerModal.style.display = 'none'; // Tutup modal
 
             if (scannerPurpose === 'sell') {
                 // Logika untuk JUAL
@@ -1270,6 +1383,8 @@
                 // Fokus ke field berikutnya
                 document.getElementById('new-product-name').focus();
             }
+            scannerPurpose = null;
+            searchBarEl.focus(); // Kembalikan fokus
         }
 
         // Fungsi ini dipanggil jika scan gagal (opsional)
@@ -1280,10 +1395,14 @@
 
         // Fungsi untuk menghentikan scanner & menutup modal
         function stopScanner() {
-            if (html5QrcodeScanner && html5QrcodeScanner.getState() === Html5QrcodeScannerState.SCANNING) {
-                html5QrcodeScanner.clear().catch(err => {
-                    console.error("Gagal menghentikan scanner:", err);
-                });
+            try {
+                if (html5QrcodeScanner && html5QrcodeScanner.getState() === Html5QrcodeScannerState.SCANNING) {
+                    html5QrcodeScanner.clear().catch(err => {
+                        console.error("Gagal menghentikan scanner:", err);
+                    });
+                }
+            } catch (e) {
+                console.warn("Gagal cek state scanner saat membatalkan.", e);
             }
             scannerModal.style.display = 'none';
             scannerPurpose = null;
@@ -1351,21 +1470,21 @@
         document.addEventListener('DOMContentLoaded', () => {
             fetchProducts();
             updateCartSummary();
-            
+
             searchBarEl.focus(); // Langsung fokus ke search bar saat aplikasi dimuat
 
             // --- KODE BARCODE SCANNING (USB/KEYBOARD) ---
-            searchBarEl.addEventListener('keypress', function(e) {
+            searchBarEl.addEventListener('keypress', function (e) {
                 if (e.key === 'Enter') {
-                    e.preventDefault(); 
+                    e.preventDefault();
                     const barcode = searchBarEl.value.trim();
-                    if (barcode === "") return; 
+                    if (barcode === "") return;
 
                     const product = allProducts.find(p => p.id && p.id.toString().toLowerCase() === barcode.toLowerCase());
 
                     if (product) {
                         addToCart(product.id);
-                        searchBarEl.value = ''; 
+                        searchBarEl.value = '';
                     } else {
                         const title = "Barang Tidak Ditemukan";
                         const message = `Barang dengan barcode/ID <strong>${barcode}</strong> tidak ditemukan.`;
@@ -1378,20 +1497,27 @@
             // === BARU: Inisialisasi dan Event Listener untuk SCANNER KAMERA ===
 
             // 1. Inisialisasi object scanner
-            // "scanner-container" adalah ID dari div tempat kamera akan muncul
-            // Konfigurasi { fps: 10, qrbox: { width: 250, height: 250 } } artinya scan 10x/detik
-            // dengan kotak panduan 250x250 pixel.
             try {
-                 html5QrcodeScanner = new Html5QrcodeScanner(
+                html5QrcodeScanner = new Html5QrcodeScanner(
                     "scanner-container",
-                    { 
-                        fps: 10, 
+                    {
+                        fps: 10,
                         qrbox: { width: 250, height: 250 },
                         supportedScanTypes: [
-                            Html5QrcodeScanType.SCAN_TYPE_CAMERA // Hanya pakai kamera
+                            Html5QrcodeScanType.SCAN_TYPE_CAMERA
+                        ],
+                        // === MODIFIKASI: Ditambahkan untuk support 1D Barcode ===
+                        formatsToSupport: [
+                            Html5QrcodeSupportedFormats.QR_CODE,
+                            Html5QrcodeSupportedFormats.EAN_13,
+                            Html5QrcodeSupportedFormats.EAN_8,
+                            Html5QrcodeSupportedFormats.UPC_A,
+                            Html5QrcodeSupportedFormats.UPC_E,
+                            Html5QrcodeSupportedFormats.CODE_128
                         ]
+                        // === AKHIR MODIFIKASI ===
                     },
-                    /* verbose= */ false); // false = jangan tampilkan log sukses di console
+                    /* verbose= */ false);
             } catch (err) {
                 console.error("Gagal inisialisasi html5QrcodeScanner:", err);
                 // Sembunyikan tombol scan jika gagal (misal di PC tanpa kamera)
@@ -1399,14 +1525,25 @@
                 scanForAddButton.style.display = 'none';
             }
 
-
             // 2. Listener untuk tombol "Scan Jual"
             scanForSellButton.addEventListener('click', () => {
                 scannerPurpose = 'sell';
                 scannerModal.style.display = 'flex';
                 // Mulai render kamera. `onScanSuccess` akan dipanggil jika berhasil
                 if (html5QrcodeScanner) {
-                    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+                    // Periksa izin kamera terlebih dahulu
+                    Html5Qrcode.getCameras().then(devices => {
+                        if (devices && devices.length) {
+                            html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+                        } else {
+                            alert("Kamera tidak ditemukan atau izin ditolak.");
+                            stopScanner();
+                        }
+                    }).catch(err => {
+                        console.error("Error saat mengakses kamera:", err);
+                        alert("Tidak bisa mengakses kamera. Pastikan Anda memberi izin.");
+                        stopScanner();
+                    });
                 } else {
                     alert("Scanner tidak bisa dimulai.");
                 }
@@ -1417,7 +1554,19 @@
                 scannerPurpose = 'add';
                 scannerModal.style.display = 'flex';
                 if (html5QrcodeScanner) {
-                    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+                    // Periksa izin kamera terlebih dahulu
+                    Html5Qrcode.getCameras().then(devices => {
+                        if (devices && devices.length) {
+                            html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+                        } else {
+                            alert("Kamera tidak ditemukan atau izin ditolak.");
+                            stopScanner();
+                        }
+                    }).catch(err => {
+                        console.error("Error saat mengakses kamera:", err);
+                        alert("Tidak bisa mengakses kamera. Pastikan Anda memberi izin.");
+                        stopScanner();
+                    });
                 } else {
                     alert("Scanner tidak bisa dimulai.");
                 }
@@ -1428,9 +1577,8 @@
                 stopScanner();
             });
 
-            // === AKHIR BARU ===
-        });
-
+        }); // <-- Ini adalah penutup 'DOMContentLoaded' yang hilang
     </script>
 </body>
+
 </html>
