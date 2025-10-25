@@ -384,143 +384,102 @@
             background-color: #f0f0f0;
         }
 
-        /* === CSS BARU UNTUK STRUK & PRINT === */
-
-        /* Style dasar untuk struk */
+        /* === CSS STRUK & PRINT === */
         #receipt-container {
             display: none;
-            /* Sembunyi secara default */
             font-family: 'Courier New', Courier, monospace;
             width: 300px;
-            /* Lebar umum struk thermal */
             padding: 10px;
             font-size: 12px;
             color: #000;
             background: #fff;
         }
-
-        #receipt-container h3 {
-            text-align: center;
-            font-size: 14px;
-            margin: 0 0 5px 0;
-        }
-
-        #receipt-container p {
-            margin: 3px 0;
-            font-size: 11px;
-        }
-
-        #receipt-container hr {
-            border: none;
-            border-top: 1px dashed #000;
-            margin: 8px 0;
-        }
-
-        #receipt-container table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 11px;
-        }
-
+        #receipt-container h3 { text-align: center; font-size: 14px; margin: 0 0 5px 0; }
+        #receipt-container p { margin: 3px 0; font-size: 11px; }
+        #receipt-container hr { border: none; border-top: 1px dashed #000; margin: 8px 0; }
+        #receipt-container table { width: 100%; border-collapse: collapse; font-size: 11px; }
         #receipt-container th,
-        #receipt-container td {
-            padding: 3px 0;
-            vertical-align: top;
-        }
+        #receipt-container td { padding: 3px 0; vertical-align: top; }
+        #receipt-container th { border-bottom: 1px solid #000; text-align: left; }
+        #receipt-container .item-name { width: 40%; text-align: left; }
+        #receipt-container .item-qty { width: 15%; text-align: center; }
+        #receipt-container .item-price { width: 20%; text-align: right; }
+        #receipt-container .subtotal { width: 25%; text-align: right; }
+        #receipt-container .receipt-total { display: flex; justify-content: space-between; font-size: 14px; font-weight: bold; margin-top: 10px; }
+        #receipt-container .receipt-footer { text-align: center; margin-top: 10px; font-size: 11px; }
 
-        #receipt-container th {
-            border-bottom: 1px solid #000;
-            text-align: left;
-        }
-
-        #receipt-container .item-name {
-            width: 40%;
-            text-align: left;
-        }
-
-        #receipt-container .item-qty {
-            width: 15%;
-            text-align: center;
-        }
-
-        #receipt-container .item-price {
-            width: 20%;
-            text-align: right;
-        }
-
-        #receipt-container .subtotal {
-            width: 25%;
-            text-align: right;
-        }
-
-        #receipt-container .receipt-total {
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-
-        #receipt-container .receipt-footer {
-            text-align: center;
-            margin-top: 10px;
-            font-size: 11px;
-        }
-
-        /* Aturan saat @media print dipicu */
         @media print {
-
-            /* Sembunyikan semua elemen aplikasi utama */
-            body> :not(#receipt-container) {
-                display: none !important;
-            }
-
-            /* Tampilkan dan posisikan kontainer struk */
-            body {
-                margin: 0;
-                background: #fff;
-                /* Pastikan background putih */
-            }
-
-            #receipt-container {
-                display: block !important;
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                /* Gunakan lebar penuh area print */
-            }
-
-            /* Atur margin halaman print */
-            @page {
-                margin: 5mm;
-            }
+            body> :not(#receipt-container) { display: none !important; }
+            body { margin: 0; background: #fff; }
+            #receipt-container { display: block !important; position: absolute; top: 0; left: 0; width: 100%; }
+            @page { margin: 5mm; }
         }
-
         /* === AKHIR CSS STRUK === */
 
-        /* === CSS BARU UNTUK MODAL STATUS === */
-        #status-modal-message {
-            margin: 15px 0;
-            line-height: 1.5;
+        /* === CSS MODAL STATUS === */
+        #status-modal-message { margin: 15px 0; line-height: 1.5; }
+        #status-modal-message strong { color: #0056b3; }
+        .modal-btn-primary { background-color: #28a745; color: white; }
+        .modal-btn-secondary { background-color: #f4f4f4; color: #555; border: 1px solid #ccc; }
+        /* === AKHIR CSS MODAL STATUS === */
+
+
+        /* === CSS BARU UNTUK TOMBOL & FORM TAMBAH BARANG === */
+        header div {
+            display: flex;
+            gap: 10px; /* Jarak antar tombol di header */
         }
 
-        #status-modal-message strong {
-            color: #0056b3;
+        #add-product-button {
+            background-color: #fff;
+            color: #007bff;
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            line-height: 32px;
+            text-align: center;
+            padding: 0;
+            transition: background-color 0.2s;
         }
 
-        .modal-btn-primary {
-            background-color: #28a745;
-            color: white;
+        #add-product-button:hover {
+            background-color: #f0f0f0;
         }
 
-        .modal-btn-secondary {
-            background-color: #f4f4f4;
+        /* Styling untuk form di modal */
+        #add-product-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px; /* Jarak antar isian */
+            margin-top: 10px;
+            overflow-y: auto;
+            padding: 5px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px; /* Jarak antara label dan input */
+        }
+
+        .form-group label {
+            font-weight: 600;
+            font-size: 0.9rem;
             color: #555;
-            border: 1px solid #ccc;
         }
 
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
         /* === AKHIR CSS BARU === */
+
     </style>
 </head>
 
@@ -530,17 +489,22 @@
 
         <header>
             <span>Kasir Warung Adel</span>
-            <button id="sync-button" title="Sinkronisasi Ulang Produk">&#x1f504;</button>
+            <div>
+                <button id="add-product-button" title="Tambah Barang Baru">&#x2795;</button>
+                <button id="sync-button" title="Sinkronisasi Ulang Produk">&#x1f504;</button>
+            </div>
         </header>
+
         <div class="search-filter-container">
             <input type="search" id="search-bar" placeholder="Cari nama barang...">
             <div class="category-filter" id="category-filter"></div>
         </div>
+
         <main id="product-list-container">
-            <div id="product-list">
-            </div>
+            <div id="product-list"></div>
             <p id="product-not-found">Barang tidak ditemukan</p>
         </main>
+
         <footer>
             <div class="cart-summary">
                 <span class="total-items" id="cart-item-count">0 Item</span>
@@ -552,6 +516,7 @@
             </div>
         </footer>
     </div>
+
     <div class="modal-overlay" id="checkout-modal">
         <div class="modal-content">
             <h3>Konfirmasi Pesanan</h3>
@@ -566,6 +531,7 @@
             </div>
         </div>
     </div>
+
     <div id="loading-overlay">Memuat Produk...</div>
 
     <div id="receipt-container" style="display: none;">
@@ -582,8 +548,7 @@
                     <th class="subtotal">Total</th>
                 </tr>
             </thead>
-            <tbody>
-            </tbody>
+            <tbody></tbody>
         </table>
         <hr>
         <p class="receipt-total">
@@ -592,6 +557,7 @@
         </p>
         <p class="receipt-footer">Terima kasih!</p>
     </div>
+
     <div class="modal-overlay" id="status-modal">
         <div class="modal-content">
             <h3 id="status-modal-title">Judul Status</h3>
@@ -602,12 +568,46 @@
             </div>
         </div>
     </div>
+
+
+    <div class="modal-overlay" id="add-product-modal">
+        <div class="modal-content">
+            <h3>Tambah Barang Baru</h3>
+            
+            <form id="add-product-form">
+                <div class="form-group">
+                    <label for="new-product-name">Nama Barang:</label>
+                    <input type="text" id="new-product-name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="new-product-price">Harga (Rp):</label>
+                    <input type="number" id="new-product-price" min="0" step="50" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="new-product-stock">Stok Awal:</label>
+                    <input type="number" id="new-product-stock" min="0" step="1" value="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="new-product-category">Kategori:</label>
+                    <input list="category-list" id="new-product-category" required autocomplete="off" placeholder="Pilih atau ketik baru...">
+                    <datalist id="category-list">
+                        </datalist>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" id="cancel-add-product-button" class="modal-btn-secondary">Batal</button>
+                    <button type="submit" id="save-product-button" class="modal-btn-primary">Simpan Barang</button>
+                </div>
+            </form>
+        </div>
+    </div>
     <script>
         // --- KONFIGURASI FRONTEND ---
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbzwL3LPD1CEmhPmAiVM2OvAxuHNadFjcHZw2v3ErjVsn_6qI8vR9LUN52pdQ5QeD5jo/exec";
-        // === KONFIGURASI BARU UNTUK CACHE ===
-        const CACHE_KEY = 'kasirProducts'; // Kunci untuk localStorage
-        const CACHE_EXPIRATION_MS = 10 * 60 * 1000; // 10 menit
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbzwL3LPD1CEmhPmAiVM2OvAxuHNadFjcHZw2v3ErjVsn_6qI8vR9LUN52pdQ5QeD5jo/exec"; // <-- GANTI DENGAN URL SCRIPT-MU
+        const CACHE_KEY = 'kasirProducts';
+        const CACHE_EXPIRATION_MS = 10 * 60 * 1000;
 
         // --- Variabel Global ---
         let allProducts = [];
@@ -641,7 +641,11 @@
         const statusModalTitle = document.getElementById('status-modal-title');
         const statusModalMessage = document.getElementById('status-modal-message');
         const statusModalActions = document.getElementById('status-modal-actions');
-
+        const addProductButton = document.getElementById('add-product-button');
+        const addProductModal = document.getElementById('add-product-modal');
+        const addProductForm = document.getElementById('add-product-form');
+        const cancelAddProductButton = document.getElementById('cancel-add-product-button');
+        const categoryDatalist = document.getElementById('category-list');
 
         // --- Fungsi-Fungsi ---
 
@@ -652,7 +656,7 @@
         }
 
         function printReceipt(transactionId, printedCart) {
-            // ... (Fungsi ini tidak berubah)
+            // (Tidak berubah)
             const now = new Date();
             const formattedDate = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
             let total = 0;
@@ -664,11 +668,11 @@
                 total += itemTotal;
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                <td class="item-name">${item.name}</td>
-                <td class="item-qty">${item.quantity}</td>
-                <td class="item-price">${formatRupiah(item.price)}</td>
-                <td class="subtotal">${formatRupiah(itemTotal)}</td>
-            `;
+                    <td class="item-name">${item.name}</td>
+                    <td class="item-qty">${item.quantity}</td>
+                    <td class="item-price">${formatRupiah(item.price)}</td>
+                    <td class="subtotal">${formatRupiah(itemTotal)}</td>
+                `;
                 receiptItemsEl.appendChild(tr);
             });
             receiptTotalEl.textContent = formatRupiah(total);
@@ -676,7 +680,7 @@
         }
 
         function showStatusModal(title, message, buttonsHtml) {
-            // ... (Fungsi ini tidak berubah)
+            // (Tidak berubah)
             statusModalTitle.textContent = title;
             statusModalMessage.innerHTML = message;
             statusModalActions.innerHTML = buttonsHtml;
@@ -684,12 +688,12 @@
         }
 
         function hideStatusModal() {
-            // ... (Fungsi ini tidak berubah)
+            // (Tidak berubah)
             statusModal.style.display = 'none';
         }
 
         function triggerPrintAndClose() {
-            // ... (Fungsi ini tidak berubah)
+            // (Tidak berubah)
             if (lastTransactionData.id && lastTransactionData.cart.length > 0) {
                 printReceipt(lastTransactionData.id, lastTransactionData.cart);
             }
@@ -698,73 +702,59 @@
         }
 
         function closeAndReset() {
-            // ... (Fungsi ini tidak berubah)
+            // (Tidak berubah)
             hideStatusModal();
             resetAfterCheckout();
         }
 
-        // === FUNGSI DIMODIFIKASI: resetAfterCheckout ===
-        // Sekarang hanya me-render ulang produk, tidak fetch
         function resetAfterCheckout() {
+            // (Tidak berubah)
             cart = [];
             updateCartSummary();
-
-            // === PERUBAHAN DI SINI ===
-            // fetchProducts(); // <-- INI DIHAPUS
-            loadProducts();   // <-- INI DITAMBAHKAN
-            // === AKHIR PERUBAHAN ===
-
-            // Kosongkan data transaksi terakhir
+            loadProducts();
             lastTransactionData = { id: null, cart: [] };
         }
 
         function closeStatusModalOnError() {
-            // ... (Fungsi ini tidak berubah)
+            // (Tidak berubah)
             hideStatusModal();
         }
 
-        // === FUNGSI BARU: updateLocalStockAndCache ===
-        // Fungsi ini untuk mengurangi stok di 'allProducts' dan localStorage
         function updateLocalStockAndCache(cartItems) {
+            // (Tidak berubah)
             console.log("Updating local stock and cache...");
             let productsUpdated = false;
-
             cartItems.forEach(item => {
-                // Cari produk di variabel global allProducts
                 const productInAll = allProducts.find(p => p.id === item.id);
                 if (productInAll) {
-                    productInAll.stock -= item.quantity; // Kurangi stok
-                    // Pastikan stok tidak minus (jaga-jaga)
+                    productInAll.stock -= item.quantity;
                     if (productInAll.stock < 0) {
                         productInAll.stock = 0;
                     }
                     productsUpdated = true;
                 }
             });
-
-            // Jika ada produk yg di-update, simpan ulang 'allProducts' ke cache
             if (productsUpdated) {
                 try {
                     const cacheData = {
-                        timestamp: Date.now(), // Setel ulang timestamp
+                        timestamp: Date.now(),
                         data: allProducts
                     };
                     localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
                     console.log("Cache localStorage diperbarui setelah checkout.");
                 } catch (e) {
                     console.error("Gagal memperbarui localStorage:", e);
-                    // Jika localStorage penuh, hapus cache
                     localStorage.removeItem(CACHE_KEY);
                 }
             }
         }
-        // === AKHIR FUNGSI BARU ===
-
 
         function loadCategories() {
-            // ... (Fungsi ini tidak berubah)
+            // (Tidak berubah)
             const uniqueCategories = [...new Set(allProducts.map(p => p.category))];
-            categories = ['Semua', ...uniqueCategories];
+            const validUniqueCategories = uniqueCategories.filter(c => c && c.trim() !== '');
+            categories = ['Semua', ...validUniqueCategories];
+
             categoryFilterEl.innerHTML = '';
             categories.forEach(category => {
                 const button = document.createElement('button');
@@ -776,10 +766,18 @@
                 button.addEventListener('click', () => filterByCategory(category));
                 categoryFilterEl.appendChild(button);
             });
+
+            const realCategories = categories.filter(c => c !== 'Semua');
+            categoryDatalist.innerHTML = '';
+            realCategories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                categoryDatalist.appendChild(option);
+            });
         }
 
         function loadProducts() {
-            // ... (Fungsi ini tidak berubah)
+            // (Tidak berubah)
             productListEl.innerHTML = '';
             let filteredProducts = allProducts;
             if (currentCategory !== 'Semua') {
@@ -788,21 +786,24 @@
             if (currentSearch) {
                 filteredProducts = filteredProducts.filter(p =>
                     p.name.toLowerCase().includes(currentSearch) ||
-                    p.id.toLowerCase().includes(currentSearch)
+                    (p.id && p.id.toString().toLowerCase().includes(currentSearch))
                 );
             }
+
             productNotFoundEl.style.display = filteredProducts.length === 0 ? 'block' : 'none';
-            filteredProducts.forEach(product => {
+            const validProducts = filteredProducts.filter(p => p.id && p.name);
+
+            validProducts.forEach(product => {
                 const item = document.createElement('div');
                 item.className = 'product-item';
                 item.setAttribute('data-id', product.id);
                 item.innerHTML = `
-                <h4>${product.name}</h4>
-                <div>
-                    <p>${formatRupiah(product.price)}</p>
-                    <span class="stock">Stok: ${product.stock}</span>
-                </div>
-            `;
+                    <h4>${product.name}</h4>
+                    <div>
+                        <p>${formatRupiah(product.price)}</p>
+                        <span class="stock">Stok: ${product.stock}</span>
+                    </div>
+                `;
                 if (product.stock === 0) {
                     item.style.opacity = '0.5';
                     item.style.cursor = 'not-allowed';
@@ -814,7 +815,7 @@
         }
 
         function filterByCategory(category) {
-            // ... (Fungsi ini tidak berubah)
+            // (Tidak berubah)
             currentCategory = category;
             document.querySelectorAll('.category-filter button').forEach(btn => {
                 btn.classList.toggle('active', btn.getAttribute('data-category') === category);
@@ -823,13 +824,13 @@
         }
 
         function filterBySearch(searchTerm) {
-            // ... (Fungsi ini tidak berubah)
+            // (Tidak berubah)
             currentSearch = searchTerm.toLowerCase();
             loadProducts();
         }
 
         function addToCart(productId) {
-            // ... (Fungsi ini tidak berubah)
+            // (Tidak berubah)
             const product = allProducts.find(p => p.id === productId);
             if (!product) return;
             const existingItem = cart.find(item => item.id === productId);
@@ -853,7 +854,7 @@
         }
 
         function decrementCartItem(productId) {
-            // ... (Fungsi ini tidak berubah)
+            // (Tidak berubah)
             const existingItem = cart.find(item => item.id === productId);
             if (!existingItem) return;
             existingItem.quantity--;
@@ -866,7 +867,7 @@
         }
 
         function updateCartSummary() {
-            // ... (Fungsi ini tidak berubah)
+            // (Tidak berubah)
             let totalItems = 0;
             let totalPrice = 0;
             cart.forEach(item => {
@@ -881,7 +882,7 @@
         }
 
         function showCheckoutModal() {
-            // ... (Fungsi ini tidak berubah)
+            // (Tidak berubah)
             modalCartListEl.innerHTML = '';
             let totalPrice = 0;
             const sortedCart = [...cart].reverse();
@@ -891,17 +892,14 @@
                 const product = allProducts.find(p => p.id === item.id);
                 const isStockMaxed = (product && item.quantity >= product.stock);
                 li.innerHTML = `
-                <span class="item-name">${item.name}</span>
-                <div class="item-qty-controls">
-                    <button class="modal-qty-btn modal-qty-minus" 
-                            data-id="${item.id}">-</button>
-                    <span>${item.quantity}</span>
-                    <button class="modal-qty-btn modal-qty-plus" 
-                            data-id="${item.id}" 
-                            ${isStockMaxed ? 'disabled' : ''}>+</button>
-                </div>
-                <span class="item-total">${formatRupiah(itemTotal)}</span>
-            `;
+                    <span class="item-name">${item.name}</span>
+                    <div class="item-qty-controls">
+                        <button class="modal-qty-btn modal-qty-minus" data-id="${item.id}">-</button>
+                        <span>${item.quantity}</span>
+                        <button class="modal-qty-btn modal-qty-plus" data-id="${item.id}" ${isStockMaxed ? 'disabled' : ''}>+</button>
+                    </div>
+                    <span class="item-total">${formatRupiah(itemTotal)}</span>
+                `;
                 modalCartListEl.appendChild(li);
                 totalPrice += itemTotal;
             });
@@ -914,13 +912,12 @@
         }
 
         function hideCheckoutModal() {
-            // ... (Fungsi ini tidak berubah)
+            // (Tidak berubah)
             checkoutModal.style.display = 'none';
         }
 
-        // === FUNGSI DIMODIFIKASI: processCheckout ===
-        // Menambahkan panggilan updateLocalStockAndCache() saat sukses
         async function processCheckout() {
+            // (Tidak berubah)
             if (cart.length === 0) return;
             const cartToPrint = JSON.parse(JSON.stringify(cart));
             hideCheckoutModal();
@@ -928,39 +925,27 @@
             loadingOverlay.textContent = 'Memproses...';
 
             try {
+                const payload = cart; // Ini adalah payload checkout
                 const response = await fetch(GAS_URL, {
                     method: 'POST',
                     mode: 'cors',
                     headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify(cart),
+                    body: JSON.stringify(payload),
                 });
                 const result = await response.json();
 
                 if (result.status === "success") {
-
-                    // === PERUBAHAN DI SINI ===
-                    // Update stok di 'allProducts' & localStorage secara lokal
                     updateLocalStockAndCache(cartToPrint);
-                    // === AKHIR PERUBAHAN ===
-
-                    // 1. Simpan data transaksi ke variabel global
                     lastTransactionData.id = result.transactionId;
                     lastTransactionData.cart = cartToPrint;
-
-                    // 2. Siapkan konten modal
                     const title = "Transaksi Berhasil!";
                     const message = `ID Transaksi: <strong>${result.transactionId}</strong><br>Apakah Anda ingin mencetak struk?`;
-
-                    // 3. Siapkan tombol-tombol
                     const buttonsHtml = `
-                    <button class="modal-btn-secondary" onclick="closeAndReset()">Selesai (Tanpa Struk)</button>
-                    <button class="modal-btn-primary" onclick="triggerPrintAndClose()">Cetak Struk</button>
-                `;
-
-                    // 4. Tampilkan modal
+                        <button class="modal-btn-secondary" onclick="closeAndReset()">Selesai (Tanpa Struk)</button>
+                        <button class="modal-btn-primary" onclick="triggerPrintAndClose()">Cetak Struk</button>
+                    `;
                     loadingOverlay.style.display = 'none';
                     showStatusModal(title, message, buttonsHtml);
-
                 } else {
                     throw new Error(result.message);
                 }
@@ -975,14 +960,14 @@
         }
 
         function resetCart() {
-            // ... (Fungsi ini tidak berubah)
+            // (Tidak berubah)
             if (cart.length === 0) return;
             const title = "Reset Keranjang";
             const message = "Apakah Anda yakin ingin mengosongkan keranjang?";
             const buttonsHtml = `
-            <button class="modal-btn-secondary" onclick="hideStatusModal()">Batal</button>
-            <button id="confirm-reset-button" class="modal-btn-primary" style="background-color:#dc3545;">Ya, Kosongkan</button>
-        `;
+                <button class="modal-btn-secondary" onclick="hideStatusModal()">Batal</button>
+                <button id="confirm-reset-button" class="modal-btn-primary" style="background-color:#dc3545;">Ya, Kosongkan</button>
+            `;
             showStatusModal(title, message, buttonsHtml);
             document.getElementById('confirm-reset-button').addEventListener('click', () => {
                 cart = [];
@@ -991,32 +976,29 @@
             }, { once: true });
         }
 
-        // === FUNGSI DIMODIFIKASI: fetchProducts ===
-        // Sekarang menggunakan localStorage sebagai cache
         async function fetchProducts(forceSync = false) {
+            // (Tidak berubah)
             loadingOverlay.style.display = 'flex';
             loadingOverlay.textContent = forceSync ? 'Sinkronisasi Ulang...' : 'Memuat Produk...';
 
             if (forceSync) {
-                localStorage.removeItem(CACHE_KEY); // Hapus cache lokal
+                localStorage.removeItem(CACHE_KEY);
                 console.log("Cache produk dihapus (Sync Paksa).");
             } else {
-                // 1. Cek cache localStorage dulu
                 try {
                     const cachedItem = localStorage.getItem(CACHE_KEY);
                     if (cachedItem) {
                         const { timestamp, data } = JSON.parse(cachedItem);
-                        // Cek apakah cache masih valid (belum kadaluwarsa)
                         if (Date.now() - timestamp < CACHE_EXPIRATION_MS) {
                             console.log("Memuat produk dari localStorage cache...");
                             allProducts = data;
                             loadCategories();
                             loadProducts();
                             loadingOverlay.style.display = 'none';
-                            return; // Selesai, tidak perlu fetch ke server
+                            return;
                         } else {
                             console.log("Cache produk kadaluarsa.");
-                            localStorage.removeItem(CACHE_KEY); // Hapus cache lama
+                            localStorage.removeItem(CACHE_KEY);
                         }
                     }
                 } catch (e) {
@@ -1025,11 +1007,10 @@
                 }
             }
 
-            // 2. Lanjutkan fetch ke server jika cache tidak ada / kadaluwarsa / forceSync
             console.log("Fetching produk dari server...");
             let url = GAS_URL;
             if (forceSync) {
-                url += "?action=clearCache"; // Minta GAS clear cache server juga
+                url += "?action=clearCache";
             }
 
             try {
@@ -1040,7 +1021,6 @@
                 const data = await response.json();
                 allProducts = data;
 
-                // 3. Simpan hasil fetch ke localStorage
                 try {
                     const cacheData = {
                         timestamp: Date.now(),
@@ -1050,7 +1030,6 @@
                     console.log("Produk disimpan ke localStorage cache.");
                 } catch (e) {
                     console.error("Gagal menyimpan ke localStorage:", e);
-                    // Ini bisa terjadi jika localStorage penuh
                 }
 
                 loadCategories();
@@ -1066,7 +1045,87 @@
                 loadingOverlay.style.display = 'none';
             }
         }
+
+
+        // === FUNGSI DIMODIFIKASI: handleSaveProduct ===
+        // Sekarang juga mengirim data stok
+        async function handleSaveProduct(e) {
+            e.preventDefault(); 
+
+            // 1. Ambil data dari form
+            const productName = document.getElementById('new-product-name').value;
+            const productPrice = parseFloat(document.getElementById('new-product-price').value);
+            const productStock = parseInt(document.getElementById('new-product-stock').value); // <-- BARU
+            const productCategory = document.getElementById('new-product-category').value;
+
+            // Validasi sederhana (termasuk stok)
+            if (!productName || !productCategory || isNaN(productPrice) || productPrice <= 0 || isNaN(productStock) || productStock < 0) { // <-- DIMODIFIKASI
+                const title = "Input Tidak Valid";
+                const message = "Pastikan Nama, Harga (angka positif), Stok (angka 0 atau lebih), dan Kategori sudah terisi dengan benar."; // <-- DIMODIFIKASI
+                const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
+                showStatusModal(title, message, buttonsHtml);
+                return;
+            }
+
+            // 2. Tampilkan loading
+            addProductModal.style.display = 'none';
+            loadingOverlay.style.display = 'flex';
+            loadingOverlay.textContent = 'Menyimpan Barang...';
+
+            // 3. Buat payload untuk dikirim ke backend
+            const payload = {
+                action: "addProduct",
+                product: {
+                    name: productName,
+                    price: productPrice,
+                    category: productCategory,
+                    stock: productStock // <-- BARU
+                }
+            };
+
+            // 4. Kirim ke Google Apps Script
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify(payload),
+                });
+                const result = await response.json();
+
+                if (result.status === "success") {
+                    loadingOverlay.style.display = 'none';
+                    
+                    const title = "Berhasil!";
+                    const message = `Barang <strong>${productName}</strong> (ID: ${result.newId}) berhasil ditambahkan.<br>Memuat ulang daftar produk...`;
+                    const buttonsHtml = `<button id="close-success-add-btn" class="modal-btn-primary" style="grid-column: 1 / -1;">OK</button>`;
+                    showStatusModal(title, message, buttonsHtml);
+
+                    document.getElementById('close-success-add-btn').addEventListener('click', () => {
+                        hideStatusModal();
+                        fetchProducts(true); // Paksa sinkronisasi ulang
+                    }, { once: true });
+
+                    addProductForm.reset(); 
+
+                } else {
+                    throw new Error(result.message);
+                }
+
+            } catch (error) {
+                console.error('Error saat tambah produk:', error);
+                loadingOverlay.style.display = 'none';
+                
+                const title = "Gagal Menyimpan";
+                const message = `Terjadi kesalahan: ${error.message}. Silakan coba lagi.`;
+                const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
+                showStatusModal(title, message, buttonsHtml);
+
+                addProductModal.style.display = 'flex'; // Tampilkan lagi modal form-nya
+            }
+        }
         // === AKHIR FUNGSI DIMODIFIKASI ===
+
 
         // --- Event Listeners ---
         searchBarEl.addEventListener('input', (e) => filterBySearch(e.target.value));
@@ -1076,22 +1135,22 @@
         confirmPaymentButton.addEventListener('click', processCheckout);
 
         syncButton.addEventListener('click', () => {
-            // ... (Fungsi ini tidak berubah)
+            // (Tidak berubah)
             const title = "Sinkronisasi Ulang";
             const message = "Sinkronisasi ulang akan memuat data terbaru dari Google Sheet.<br>Lanjutkan?";
             const buttonsHtml = `
-            <button class="modal-btn-secondary" onclick="hideStatusModal()">Batal</button>
-            <button id="confirm-sync-button" class="modal-btn-primary">Lanjutkan</button>
-        `;
+                <button class="modal-btn-secondary" onclick="hideStatusModal()">Batal</button>
+                <button id="confirm-sync-button" class="modal-btn-primary">Lanjutkan</button>
+            `;
             showStatusModal(title, message, buttonsHtml);
             document.getElementById('confirm-sync-button').addEventListener('click', () => {
                 hideStatusModal();
-                fetchProducts(true); // Panggil dengan forceSync = true
+                fetchProducts(true);
             }, { once: true });
         });
 
         modalCartListEl.addEventListener('click', (e) => {
-            // ... (Fungsi ini tidak berubah)
+            // (Tidak berubah)
             const target = e.target;
             if (target.classList.contains('modal-qty-plus')) {
                 const id = target.dataset.id;
@@ -1107,9 +1166,24 @@
             }
         });
 
+        addProductButton.addEventListener('click', () => {
+            // (Tidak berubah)
+            addProductModal.style.display = 'flex';
+            document.getElementById('new-product-name').focus();
+        });
+
+        cancelAddProductButton.addEventListener('click', () => {
+            // (Tidak berubah)
+            addProductForm.reset();
+            addProductModal.style.display = 'none';
+        });
+
+        addProductForm.addEventListener('submit', handleSaveProduct);
+
+
         // --- Inisialisasi Aplikasi ---
         document.addEventListener('DOMContentLoaded', () => {
-            fetchProducts(); // fetchProducts() yg sudah dimodifikasi
+            fetchProducts();
             updateCartSummary();
         });
 
