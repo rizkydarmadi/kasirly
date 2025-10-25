@@ -496,7 +496,7 @@
         </header>
 
         <div class="search-filter-container">
-            <input type="search" id="search-bar" placeholder="Cari nama barang...">
+            <input type="search" id="search-bar" placeholder="Scan barcode atau cari nama barang...">
             <div class="category-filter" id="category-filter"></div>
         </div>
 
@@ -575,6 +575,11 @@
             <h3>Tambah Barang Baru</h3>
             
             <form id="add-product-form">
+                
+                <div class="form-group">
+                    <label for="new-product-id">Barcode (ID):</label>
+                    <input type="text" id="new-product-id" required placeholder="Scan barcode atau ketik ID unik">
+                </div>
                 <div class="form-group">
                     <label for="new-product-name">Nama Barang:</label>
                     <input type="text" id="new-product-name" required>
@@ -593,7 +598,7 @@
                     <label for="new-product-category">Kategori:</label>
                     <input list="category-list" id="new-product-category" required autocomplete="off" placeholder="Pilih atau ketik baru...">
                     <datalist id="category-list">
-                        </datalist>
+                    </datalist>
                 </div>
                 
                 <div class="modal-actions">
@@ -688,8 +693,9 @@
         }
 
         function hideStatusModal() {
-            // (Tidak berubah)
+            // (Modifikasi: Tambah fokus)
             statusModal.style.display = 'none';
+            searchBarEl.focus(); // <-- FOKUS KEMBALI KE SEARCH
         }
 
         function triggerPrintAndClose() {
@@ -711,7 +717,7 @@
             // (Tidak berubah)
             cart = [];
             updateCartSummary();
-            loadProducts();
+            loadProducts(); // Load ulang produk untuk update stok visual
             lastTransactionData = { id: null, cart: [] };
         }
 
@@ -912,8 +918,9 @@
         }
 
         function hideCheckoutModal() {
-            // (Tidak berubah)
+            // (Modifikasi: Tambah fokus)
             checkoutModal.style.display = 'none';
+            searchBarEl.focus(); // <-- FOKUS KEMBALI KE SEARCH
         }
 
         async function processCheckout() {
@@ -1048,20 +1055,21 @@
 
 
         // === FUNGSI DIMODIFIKASI: handleSaveProduct ===
-        // Sekarang juga mengirim data stok
+        // Sekarang juga mengirim data ID dari form
         async function handleSaveProduct(e) {
             e.preventDefault(); 
 
             // 1. Ambil data dari form
+            const productId = document.getElementById('new-product-id').value.trim(); // <-- BARU
             const productName = document.getElementById('new-product-name').value;
             const productPrice = parseFloat(document.getElementById('new-product-price').value);
-            const productStock = parseInt(document.getElementById('new-product-stock').value); // <-- BARU
+            const productStock = parseInt(document.getElementById('new-product-stock').value);
             const productCategory = document.getElementById('new-product-category').value;
 
-            // Validasi sederhana (termasuk stok)
-            if (!productName || !productCategory || isNaN(productPrice) || productPrice <= 0 || isNaN(productStock) || productStock < 0) { // <-- DIMODIFIKASI
+            // Validasi (termasuk ID)
+            if (!productId || !productName || !productCategory || isNaN(productPrice) || productPrice <= 0 || isNaN(productStock) || productStock < 0) { // <-- DIMODIFIKASI
                 const title = "Input Tidak Valid";
-                const message = "Pastikan Nama, Harga (angka positif), Stok (angka 0 atau lebih), dan Kategori sudah terisi dengan benar."; // <-- DIMODIFIKASI
+                const message = "Pastikan Barcode (ID), Nama, Harga (angka positif), Stok (angka 0 atau lebih), dan Kategori sudah terisi dengan benar."; // <-- DIMODIFIKASI
                 const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
                 showStatusModal(title, message, buttonsHtml);
                 return;
@@ -1076,10 +1084,11 @@
             const payload = {
                 action: "addProduct",
                 product: {
+                    id: productId, // <-- BARU
                     name: productName,
                     price: productPrice,
                     category: productCategory,
-                    stock: productStock // <-- BARU
+                    stock: productStock
                 }
             };
 
@@ -1109,7 +1118,7 @@
                     addProductForm.reset(); 
 
                 } else {
-                    throw new Error(result.message);
+                    throw new Error(result.message); // Akan menangkap error (misal: ID duplikat)
                 }
 
             } catch (error) {
@@ -1169,13 +1178,15 @@
         addProductButton.addEventListener('click', () => {
             // (Tidak berubah)
             addProductModal.style.display = 'flex';
-            document.getElementById('new-product-name').focus();
+            // Fokus ke field ID baru
+            document.getElementById('new-product-id').focus();
         });
 
         cancelAddProductButton.addEventListener('click', () => {
-            // (Tidak berubah)
+            // (Modifikasi: Tambah fokus)
             addProductForm.reset();
             addProductModal.style.display = 'none';
+            searchBarEl.focus(); // <-- FOKUS KEMBALI KE SEARCH
         });
 
         addProductForm.addEventListener('submit', handleSaveProduct);
@@ -1185,6 +1196,36 @@
         document.addEventListener('DOMContentLoaded', () => {
             fetchProducts();
             updateCartSummary();
+            
+            searchBarEl.focus(); // Langsung fokus ke search bar saat aplikasi dimuat
+
+            // --- KODE BARCODE SCANNING (TAMBAHAN BARU) ---
+            searchBarEl.addEventListener('keypress', function(e) {
+                // Hanya jalankan jika tombol 'Enter' ditekan
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // Mencegah aksi default 'Enter' (misal: submit form)
+                    const barcode = searchBarEl.value.trim();
+                    if (barcode === "") return; // Jangan lakukan apa-apa jika kosong
+
+                    // Cari produk berdasarkan ID (barcode)
+                    // Kita pakai .find() agar lebih cepat dan case-insensitive
+                    const product = allProducts.find(p => p.id && p.id.toString().toLowerCase() === barcode.toLowerCase());
+
+                    if (product) {
+                        // Jika ketemu, langsung tambahkan ke keranjang
+                        addToCart(product.id);
+                        searchBarEl.value = ''; // Kosongkan search bar
+                    } else {
+                        // Jika tidak ketemu, tampilkan notifikasi
+                        const title = "Barang Tidak Ditemukan";
+                        const message = `Barang dengan barcode/ID <strong>${barcode}</strong> tidak ditemukan.`;
+                        const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
+                        showStatusModal(title, message, buttonsHtml);
+                        // search bar akan otomatis fokus saat modal ditutup
+                    }
+                }
+            });
+            // --- AKHIR KODE BARCODE SCANNING ---
         });
 
     </script>
