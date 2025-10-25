@@ -612,45 +612,60 @@
 
         /* === CSS Untuk Modal Scanner === */
         #scanner-modal .modal-content {
-            max-height: 90vh;
-            overflow: hidden;
+            max-height: 90vh; /* Sesuaikan jika perlu */
+            overflow: hidden; /* Tetap sembunyikan overflow modal */
         }
 
         #scanner-container {
-            position: relative; /* Diperlukan agar overlay bisa diposisikan absolut */
+            position: relative; 
             width: 100%;
+            /* Tentukan aspect ratio (misal 4:3) menggunakan padding-bottom trick */
+            padding-bottom: 75%; /* 3 / 4 * 100% */
+            height: 0; /* Tinggi harus 0 untuk padding-bottom trick */
             max-width: 500px;
-            min-height: 200px; /* Beri tinggi minimum */
-            margin: 10px auto 0 auto; /* Beri sedikit margin atas */
+            margin: 10px auto 0 auto; 
             border: 1px solid #ddd;
             border-radius: 8px;
-            overflow: hidden;
-            background-color: #333; /* Latar belakang gelap */
+            overflow: hidden; /* Sembunyikan bagian video yang keluar */
+            background-color: #333; 
         }
 
         /* CSS untuk div viewport QuaggaJS */
         #interactive.viewport {
-            position: relative; /* Posisi relatif untuk elemen di dalamnya */
+            position: absolute; /* Mengisi #scanner-container */
+            top: 0;
+            left: 0;
             width: 100%;
-            height: 100%;
+            height: 100%; 
             overflow: hidden;
         }
-        /* Style video dan canvas yang akan dibuat QuaggaJS */
+        /* Style video dan canvas QuaggaJS */
         #interactive.viewport video,
         #interactive.viewport canvas {
             position: absolute;
             top: 50%;
             left: 50%;
-            width: auto;
-            height: 100%; /* Buat video mengisi tinggi container */
+            /* Prioritaskan mengisi tinggi, biarkan lebar menyesuaikan */
+            width: auto; 
+            height: 100%; 
+            /* Atau prioritaskan mengisi lebar jika orientasi kamera landscape */
+            /* width: 100%; */
+            /* height: auto; */
             transform: translate(-50%, -50%);
-            min-width: 100%; /* Pastikan video setidaknya selebar container */
-            min-height: 100%;
+             /* Pastikan minimal mengisi container */
+             min-width: 100%;
+             min-height: 100%;
+             object-fit: cover; /* Hindari distorsi, potong jika perlu */
         }
         /* Canvas untuk drawing box Quagga bisa ditumpuk */
         #interactive.viewport canvas.drawingBuffer {
             z-index: 5;
             pointer-events: none;
+            position: absolute; /* Pastikan posisinya absolut */
+             top: 0;
+             left: 0;
+             width: 100%;
+             height: 100%;
         }
         
         #scanner-modal .modal-actions {
@@ -676,7 +691,8 @@
         .scanner-window {
             width: 80%; /* Lebar area pemindaian relatif */
             max-width: 300px; /* Batas lebar maksimum */
-            height: 150px; /* Tinggi area pemindaian (sesuaikan untuk barcode EAN) */
+             /* Tinggi dibuat lebih pendek, cocok untuk barcode EAN */
+             height: 100px; 
             position: relative;
             box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.5); /* Overlay gelap di luar window */
             border-radius: 5px; /* Sedikit lengkungan */
@@ -866,10 +882,8 @@
     <div class="modal-overlay" id="scanner-modal">
         <div class="modal-content">
             <h3>Scan Barcode</h3>
-            <!-- Modifikasi: Tambahkan div #interactive untuk Quagga -->
             <div id="scanner-container">
                  <div id="interactive" class="viewport"></div> 
-                 <!-- Overlay tetap di sini agar tampil di atas #interactive -->
                  <div class="scanner-overlay">
                     <div class="scanner-window">
                         <div class="scanner-laser"></div>
@@ -1425,32 +1439,39 @@
                     type: "LiveStream",
                     target: document.querySelector('#interactive'), // Targetkan div viewport
                     constraints: {
-                        width: { min: 640 },
-                        height: { min: 480 },
-                        facingMode: "environment", // Prioritaskan kamera belakang
-                        aspectRatio: { min: 1, max: 2 }
+                         // Coba resolusi yang lebih umum atau hapus constraint ini
+                         // width: { min: 640 }, 
+                         // height: { min: 480 },
+                        facingMode: "environment", 
+                         aspectRatio: { min: 1, max: 2 } // Biarkan lebih fleksibel
                     },
-                     singleChannel: false // true = grey scale, false = color
+                    area: { // Area pemrosesan (opsional, bisa mempercepat)
+                        top: "20%",    // Mulai dari 20% dari atas
+                        right: "10%",  // Sampai 10% dari kanan
+                        left: "10%",   // Mulai 10% dari kiri
+                        bottom: "20%"  // Sampai 20% dari bawah
+                    },
+                     singleChannel: false 
                 },
                 decoder: {
                      readers: [
-                        "ean_reader", // Fokus utama
+                        "ean_reader", 
                         "ean_8_reader",
-                        "code_128_reader", // Tambahkan Code 128
+                        "code_128_reader", 
                         "upc_reader",
                         "upc_e_reader"
                     ],
                     debug: {
-                         drawBoundingBox: true,
+                         drawBoundingBox: true, // Tampilkan kotak di sekitar barcode yg terdeteksi
                          showFrequency: false,
-                         drawScanline: false,
+                         drawScanline: true, // Tampilkan garis scan di hasil debug (jika ada canvas debug)
                          showPattern: false
                     },
-                     multiple: false // Hanya deteksi satu barcode per frame
+                     multiple: false 
                 },
-                 locate: true, // Bantu deteksi lokasi barcode
-                numOfWorkers: navigator.hardwareConcurrency || 4, // Gunakan worker sesuai core CPU
-                 frequency: 10, // Frame per detik untuk diproses
+                 locate: true, 
+                numOfWorkers: navigator.hardwareConcurrency >= 4 ? 4 : navigator.hardwareConcurrency, // Batasi worker
+                 frequency: 10, 
             };
 
             Quagga.init(quaggaConfig, function(err) {
@@ -1463,10 +1484,12 @@
                          message = "Kamera tidak ditemukan. Pastikan kamera terhubung dan tidak digunakan aplikasi lain.";
                     } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
                          message = "Kamera sedang digunakan oleh aplikasi lain atau terjadi error pada kamera.";
+                     } else if (err.message && err.message.includes('enumerateDevices() not supported')) {
+                         message = "Browser Anda tidak sepenuhnya mendukung akses kamera yang dibutuhkan. Coba browser lain atau update browser Anda.";
                      }
                     
                     showStatusModal("Scanner Error", message, `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`);
-                    stopQuaggaScanner(); // Pastikan modal tertutup
+                    stopQuaggaScanner(); 
                     return;
                 }
                 console.log("QuaggaJS initialized successfully.");
@@ -1476,35 +1499,43 @@
             });
 
              // --- Hapus listener lama dan tambahkan listener baru ---
-            Quagga.offDetected(quaggaOnDetected); // Hapus listener sebelumnya (jika ada)
-            Quagga.onDetected(quaggaOnDetected); // Tambahkan listener deteksi
+            Quagga.offDetected(quaggaOnDetected); 
+            Quagga.onDetected(quaggaOnDetected); 
 
-             // Opsional: Listener untuk memproses frame (bisa digunakan untuk debug)
-             // Quagga.onProcessed(function(result) {
-            //     var drawingCtx = Quagga.canvas.ctx.overlay,
-            //         drawingCanvas = Quagga.canvas.dom.overlay;
-            //     if (result) {
-            //         // Kosongkan canvas sebelum menggambar box baru
-            //         // drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.getAttribute("width")), parseInt(drawingCanvas.getAttribute("height")));
-            //         if (result.boxes) {
-            //             drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.getAttribute("width")), parseInt(drawingCanvas.getAttribute("height")));
-            //             result.boxes.filter(function (box) {
-            //                 return box !== result.box;
-            //             }).forEach(function (box) {
-            //                 Quagga.ImageDebug.drawPath(box, {x: 0, y: 1}, drawingCtx, {color: "green", lineWidth: 2});
-            //             });
-            //         }
-            //         if (result.box) {
-            //             Quagga.ImageDebug.drawPath(result.box, {x: 0, y: 1}, drawingCtx, {color: "#00F", lineWidth: 2});
-            //         }
-            //         if (result.codeResult && result.codeResult.code) {
-            //             // Quagga.ImageDebug.drawPath(result.line, {x: 'x', y: 'y'}, drawingCtx, {color: 'red', lineWidth: 3});
-            //         }
-            //     }
-            // });
+             // Listener untuk menggambar box deteksi (jika debug: { drawBoundingBox: true })
+             Quagga.onProcessed(function(result) {
+                 var drawingCtx = Quagga.canvas.ctx.overlay,
+                     drawingCanvas = Quagga.canvas.dom.overlay;
+
+                 if (result) {
+                    // Hapus gambar sebelumnya
+                    drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.getAttribute("width")), parseInt(drawingCanvas.getAttribute("height")));
+                     if (result.boxes) {
+                         result.boxes.filter(function (box) {
+                             return box !== result.box;
+                         }).forEach(function (box) {
+                             Quagga.ImageDebug.drawPath(box, {x: 0, y: 1}, drawingCtx, {color: "green", lineWidth: 2});
+                         });
+                     }
+                     // Gambar box utama jika ada hasil deteksi barcode
+                     if (result.codeResult && result.codeResult.code) {
+                         // Gambar box di sekitar barcode yang berhasil dideteksi
+                         if (result.box) {
+                              Quagga.ImageDebug.drawPath(result.box, {x: 0, y: 1}, drawingCtx, {color: "blue", lineWidth: 2});
+                         }
+                         // Gambar garis merah di tengah barcode (jika ada)
+                         // if (result.line) {
+                         //     Quagga.ImageDebug.drawPath(result.line, {x: 'x', y: 'y'}, drawingCtx, {color: 'red', lineWidth: 3});
+                         // }
+                     }
+                 }
+             });
         }
 
         function quaggaOnDetected(result) {
+             // Tambahkan debounce sederhana untuk mencegah deteksi ganda terlalu cepat
+            if (!isQuaggaRunning) return; // Jangan proses jika sudah distop
+
             if (!result || !result.codeResult || !result.codeResult.code) {
                  console.log("Deteksi tidak valid:", result);
                 return;
@@ -1514,7 +1545,7 @@
             console.log(`Barcode terdeteksi (${result.codeResult.format}): ${code}`);
 
             // Hentikan Quagga SEGERA setelah deteksi berhasil
-            stopQuaggaScanner();
+            stopQuaggaScanner(); 
 
             // Proses kode yang terdeteksi
             if (scannerPurpose === 'sell') {
@@ -1531,12 +1562,10 @@
                 }
             } else if (scannerPurpose === 'add') {
                 document.getElementById('new-product-id').value = code;
-                 // Fokus ke field berikutnya setelah scan
                 document.getElementById('new-product-name').focus();
             }
 
-            scannerPurpose = null; // Reset purpose
-             // Fokuskan search bar jika tidak sedang mengisi form tambah barang
+            scannerPurpose = null; 
              if (addProductModal.style.display !== 'flex') {
                  searchBarEl.focus();
              }
@@ -1544,19 +1573,26 @@
 
         function stopQuaggaScanner() {
             if (isQuaggaRunning) {
-                 Quagga.offDetected(quaggaOnDetected); // Hapus listener
-                 // Quagga.offProcessed(); // Hapus listener proses jika digunakan
+                 Quagga.offDetected(quaggaOnDetected); 
+                 Quagga.offProcessed(); // Hapus listener drawing box
                 Quagga.stop();
                 isQuaggaRunning = false;
                 console.log("QuaggaJS stopped.");
+                 // Hapus canvas overlay yang dibuat Quagga
+                const overlayCanvas = document.querySelector('#interactive canvas.drawingBuffer');
+                 if (overlayCanvas) {
+                     overlayCanvas.remove();
+                 }
+                 const videoElement = document.querySelector('#interactive video');
+                 if(videoElement) {
+                      videoElement.remove(); // Hapus video juga
+                 }
             }
-            scannerModal.style.display = 'none'; // Selalu tutup modal
-             // Kosongkan viewport agar video hilang
+            scannerModal.style.display = 'none'; 
             const interactiveElement = document.getElementById('interactive');
             if(interactiveElement) interactiveElement.innerHTML = ''; 
 
-            scannerPurpose = null; // Reset purpose
-             // Fokuskan search bar jika tidak sedang mengisi form tambah barang
+            scannerPurpose = null; 
              if (addProductModal.style.display !== 'flex') {
                  searchBarEl.focus();
              }
@@ -1651,8 +1687,6 @@
                     }
                 }
             });
-
-            // Tidak perlu inisialisasi scanner di sini lagi, dilakukan saat tombol ditekan
             
         }); 
     </script>
