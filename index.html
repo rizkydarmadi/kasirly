@@ -616,38 +616,106 @@
         }
 
         #scanner-container {
+            position: relative; /* Diperlukan agar overlay bisa diposisikan absolut */
             width: 100%;
             max-width: 500px;
-            margin: 0 auto;
+            margin: 10px auto 0 auto; /* Beri sedikit margin atas */
             border: 1px solid #ddd;
             border-radius: 8px;
             overflow: hidden;
+             background-color: #333; /* Latar belakang gelap jika video belum muncul */
         }
 
+        /* Pastikan video mengisi container */
         #scanner-container video {
+            display: block; /* Hapus spasi ekstra di bawah video */
             width: 100% !important;
             height: auto !important;
         }
         
         /* === MODIFIKASI: Sembunyikan UI Bawaan Library === */
-        /* Sembunyikan dropdown "Select Camera" */
-        #scanner-container #html5-qrcode-header {
-            display: none !important;
-        }
-        /* Sembunyikan box putih panduan (tidak perlu lagi) */
-        #scanner-container .html5-qrcode-scanner-region {
-             border: none !important;
-        }
-        /* Sembunyikan link "Stop Scanning" */
-        #scanner-container #html5-qrcode-scan-region > button[data-qr-scanner-stop-scanning="true"] {
-             display: none !important;
-        }
+        #scanner-container #html5-qrcode-header { display: none !important; }
+        #scanner-container .html5-qrcode-scanner-region { border: none !important; }
+        #scanner-container #html5-qrcode-scan-region > button[data-qr-scanner-stop-scanning="true"] { display: none !important; }
         /* === AKHIR MODIFIKASI === */
 
         #scanner-modal .modal-actions {
             margin-top: 15px;
             grid-template-columns: 1fr; /* Hanya satu tombol "Batal" */
         }
+
+        /* === CSS BARU UNTUK TAMPILAN SCANNER === */
+        .scanner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none; /* Agar tidak menghalangi interaksi */
+            z-index: 1; /* Pastikan di atas video */
+        }
+
+        .scanner-window {
+            width: 80%; /* Lebar area pemindaian relatif */
+            max-width: 300px; /* Batas lebar maksimum */
+            height: 150px; /* Tinggi area pemindaian (sesuaikan untuk barcode EAN) */
+            position: relative;
+            /* Trik overlay: background gradient untuk area transparan, box-shadow untuk area gelap */
+            box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.5); /* Overlay gelap di luar window */
+            border-radius: 5px; /* Sedikit lengkungan */
+            /* Garis batas tipis bisa ditambahkan jika diinginkan:
+               border: 1px solid rgba(255, 255, 255, 0.3); */
+        }
+
+        .scanner-laser {
+            position: absolute;
+            /* Posisi awal di atas */
+            top: 10%;
+            left: 5%;
+            right: 5%;
+            height: 2px;
+            background-color: red;
+            box-shadow: 0 0 5px red, 0 0 2px red inset; /* Efek glow */
+            border-radius: 1px;
+            animation: scan-animation 2.5s infinite linear; /* Durasi animasi */
+        }
+
+        .scanner-corner {
+            position: absolute;
+            width: 25px; /* Ukuran sudut */
+            height: 25px; /* Ukuran sudut */
+            border: 4px solid white; /* Ketebalan dan warna sudut */
+            border-radius: 3px; /* Sedikit lengkungan di sudut */
+        }
+        /* Posisi sudut */
+        .scanner-corner.top-left { top: -4px; left: -4px; border-right: none; border-bottom: none; }
+        .scanner-corner.top-right { top: -4px; right: -4px; border-left: none; border-bottom: none; }
+        .scanner-corner.bottom-left { bottom: -4px; left: -4px; border-right: none; border-top: none; }
+        .scanner-corner.bottom-right { bottom: -4px; right: -4px; border-left: none; border-top: none; }
+
+        .scanner-instruction {
+            color: white;
+            margin-top: 20px; /* Jarak dari window scanner */
+            font-size: 0.9rem;
+            background-color: rgba(0, 0, 0, 0.5); /* Background semi-transparan */
+            padding: 6px 12px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        /* Animasi laser */
+        @keyframes scan-animation {
+            0% { top: 10%; opacity: 1; }
+            50% { top: 90%; opacity: 1; }
+             /* Jeda sedikit di bawah */
+            60% { top: 90%; opacity: 1; }
+            100% { top: 10%; opacity: 1; }
+        }
+        /* === AKHIR CSS BARU === */
         
     </style>
 </head>
@@ -790,7 +858,20 @@
         <div class="modal-content">
             <h3>Scan Barcode</h3>
             <div id="scanner-container">
+                 <!-- Kontainer untuk scanner library -->
+                 <!-- DIV BARU UNTUK OVERLAY -->
+                 <div class="scanner-overlay">
+                    <div class="scanner-window">
+                        <div class="scanner-laser"></div>
+                        <div class="scanner-corner top-left"></div>
+                        <div class="scanner-corner top-right"></div>
+                        <div class="scanner-corner bottom-left"></div>
+                        <div class="scanner-corner bottom-right"></div>
+                    </div>
+                    <p class="scanner-instruction">Posisikan barcode di dalam area</p>
                 </div>
+                 <!-- AKHIR DIV BARU -->
+            </div>
             <div class="modal-actions">
                 <button id="cancel-scan-button" class="modal-btn-secondary">Batal</button>
             </div>
@@ -895,7 +976,10 @@
 
         function hideStatusModal() {
             statusModal.style.display = 'none';
-            searchBarEl.focus(); 
+            // Kembalikan fokus ke search bar hanya jika tidak ada modal lain yang aktif
+             if (addProductModal.style.display !== 'flex' && scannerModal.style.display !== 'flex') {
+                searchBarEl.focus();
+            }
         }
 
         function triggerPrintAndClose() {
@@ -919,7 +1003,11 @@
         }
 
         function closeStatusModalOnError() {
-            hideStatusModal();
+             hideStatusModal();
+             // Jika error terjadi saat scan, kembalikan fokus ke search bar
+            if (scannerModal.style.display !== 'flex') {
+                 searchBarEl.focus();
+             }
         }
 
         function updateLocalStockAndCache(cartItems) {
@@ -1324,27 +1412,22 @@
 
         // === Fungsi-fungsi untuk Scanner ===
 
-        // ==========================================================
-        // === FUNGSI INI TELAH DIPERBAIKI ===
-        // ==========================================================
         function onScanSuccess(decodedText, decodedResult) {
             console.log(`Scan berhasil: ${decodedText}`);
             
             // Hentikan scanner-nya
             try {
-                // FIX: Hapus pengecekan .getState() yang error
                 if (html5QrcodeScanner) { 
                     html5QrcodeScanner.stop()
                         .then(() => {
                             console.log("Scanner dihentikan setelah sukses.");
                         })
                         .catch(err => {
-                            // Ini wajar jika scanner sudah distop
-                            console.warn("Gagal menghentikan scanner setelah sukses.", err);
+                            console.warn("Gagal menghentikan scanner setelah sukses (mungkin sudah berhenti).", err);
                         });
                 }
             } catch (e) {
-                console.warn("Error saat menghentikan scanner:", e);
+                console.warn("Error saat mencoba menghentikan scanner:", e);
             }
             
             scannerModal.style.display = 'none'; // Tutup modal
@@ -1367,33 +1450,32 @@
                 document.getElementById('new-product-name').focus();
             }
             scannerPurpose = null;
+            // Kembalikan fokus ke search bar setelah modal ditutup
             searchBarEl.focus(); 
         }
 
         function onScanFailure(error) {
-            // Biarkan kosong, tidak perlu log
+            // Biarkan kosong, tidak perlu log detail error pemindaian
+             // console.warn(`Code scan error = ${error}`);
         }
 
-        // ==========================================================
-        // === FUNGSI INI TELAH DIPERBAIKI ===
-        // ==========================================================
         function stopScanner() {
              try {
-                // FIX: Hapus pengecekan .getState() yang error
                 if (html5QrcodeScanner) {
                      html5QrcodeScanner.stop()
                          .then(() => {
-                             console.log("Scanner dihentikan oleh tombol Batal.");
+                             console.log("Scanner dihentikan oleh tombol Batal/Error.");
                          })
                          .catch(err => {
-                             console.warn("Gagal menghentikan scanner, mungkin sudah dihentikan.", err);
+                             console.warn("Gagal menghentikan scanner (mungkin sudah berhenti).", err);
                          });
                  }
              } catch (e) {
-                 console.warn("Gagal cek state scanner saat membatalkan.", e);
+                 console.warn("Error saat mencoba menghentikan scanner:", e);
              }
              scannerModal.style.display = 'none';
              scannerPurpose = null;
+             // Kembalikan fokus ke search bar setelah modal ditutup
              searchBarEl.focus();
         }
         
@@ -1422,13 +1504,13 @@
             if (target.classList.contains('modal-qty-plus')) {
                 const id = target.dataset.id;
                 addToCart(id);
-                showCheckoutModal();
+                showCheckoutModal(); // Perbarui tampilan modal setelah tambah
                 updateCartSummary();
             }
             if (target.classList.contains('modal-qty-minus')) {
                 const id = target.dataset.id;
                 decrementCartItem(id);
-                showCheckoutModal();
+                showCheckoutModal(); // Perbarui tampilan modal setelah kurang
                 updateCartSummary();
             }
         });
@@ -1452,6 +1534,7 @@
             fetchProducts();
             updateCartSummary();
             
+            // Fokuskan search bar saat awal load
             searchBarEl.focus(); 
 
             // --- KODE BARCODE SCANNING (USB/KEYBOARD) ---
@@ -1465,7 +1548,8 @@
 
                     if (product) {
                         addToCart(product.id);
-                        searchBarEl.value = ''; 
+                        searchBarEl.value = ''; // Kosongkan search bar setelah scan berhasil
+                        filterBySearch(''); // Reset filter pencarian
                     } else {
                         const title = "Barang Tidak Ditemukan";
                         const message = `Barang dengan barcode/ID <strong>${barcode}</strong> tidak ditemukan.`;
@@ -1477,113 +1561,101 @@
 
             // === Inisialisasi dan Event Listener untuk SCANNER KAMERA ===
 
-            // 1. Inisialisasi object scanner
-            try {
-                 html5QrcodeScanner = new Html5QrcodeScanner(
-                    "scanner-container",
-                    { 
-                        fps: 10, 
-                        // === MODIFIKASI: qrbox DIHAPUS agar memindai fullscreen ===
-                        // qrbox: { width: 250, height: 250 }, 
-                        // === AKHIR MODIFIKASI ===
-                        supportedScanTypes: [
-                            Html5QrcodeScanType.SCAN_TYPE_CAMERA
-                        ],
-                        formatsToSupport: [
-                            Html5QrcodeSupportedFormats.QR_CODE,
-                            Html5QrcodeSupportedFormats.EAN_13,
-                            Html5QrcodeSupportedFormats.EAN_8,
-                            Html5QrcodeSupportedFormats.UPC_A,
-                            Html5QrcodeSupportedFormats.UPC_E,
-                            Html5QrcodeSupportedFormats.CODE_128
-                        ]
-                    },
-                    /* verbose= */ false);
-            } catch (err) {
-                console.error("Gagal inisialisasi html5QrcodeScanner:", err);
-                scanForSellButton.style.display = 'none';
-                scanForAddButton.style.display = 'none';
-                
-                // --- TAMBAHAN: Ganti alert dengan modal ---
-                const title = "Scanner Error";
-                const message = "Gagal memuat library scanner kamera. Tombol scan akan disembunyikan. Anda masih bisa mengetik manual.";
-                const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
-                showStatusModal(title, message, buttonsHtml);
-                // --- AKHIR TAMBAHAN ---
+            // 1. Inisialisasi object scanner (dilakukan satu kali)
+             // Variabel untuk menyimpan instance scanner
+             let scannerInstance = null;
+
+            function initializeScanner() {
+                 // Hanya inisialisasi jika belum ada instance
+                 if (!scannerInstance) {
+                     try {
+                         scannerInstance = new Html5QrcodeScanner(
+                             "scanner-container", 
+                             {
+                                 fps: 15, // Coba tingkatkan FPS sedikit
+                                 // Hapus qrbox untuk full region scan
+                                 // qrbox: { width: 250, height: 250 },
+                                 experimentalFeatures: {
+                                     useBarCodeDetectorIfSupported: true // Coba gunakan BarcodeDetector API jika ada
+                                 },
+                                 rememberLastUsedCamera: true, // Ingat kamera terakhir
+                                 supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
+                                 formatsToSupport: [ 
+                                     Html5QrcodeSupportedFormats.EAN_13,
+                                     Html5QrcodeSupportedFormats.CODE_128, // Tambahkan format umum lain
+                                     Html5QrcodeSupportedFormats.EAN_8,
+                                     Html5QrcodeSupportedFormats.UPC_A,
+                                     Html5QrcodeSupportedFormats.UPC_E
+                                     // Html5QrcodeSupportedFormats.QR_CODE // Aktifkan jika perlu scan QR juga
+                                 ]
+                             }, 
+                             /* verbose= */ false
+                         );
+                     } catch (err) {
+                         console.error("Gagal inisialisasi html5QrcodeScanner:", err);
+                         scannerInstance = null; // Set ke null jika gagal
+                         scanForSellButton.style.display = 'none'; // Sembunyikan tombol jika gagal init
+                         scanForAddButton.style.display = 'none';
+
+                         const title = "Scanner Error";
+                         const message = "Gagal memuat library scanner kamera. Tombol scan tidak akan berfungsi. Anda masih bisa mengetik manual.";
+                         const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
+                         showStatusModal(title, message, buttonsHtml);
+                     }
+                 }
+                 return scannerInstance; // Kembalikan instance (atau null jika gagal)
             }
-            
+
+
+            // Fungsi untuk memulai scan
+            function startScan(purpose) {
+                 const scanner = initializeScanner(); // Pastikan scanner sudah diinisialisasi
+                 if (!scanner) {
+                     console.error("Scanner tidak terinisialisasi, tidak bisa memulai scan.");
+                     const title = "Scanner Error";
+                     const message = "Scanner tidak bisa dimulai karena gagal dimuat.";
+                     const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
+                     showStatusModal(title, message, buttonsHtml);
+                     return;
+                 }
+
+                 scannerPurpose = purpose;
+                 scannerModal.style.display = 'flex';
+
+                 // Render scanner (meminta izin kamera jika perlu)
+                 // Ini akan menampilkan UI scanner library di dalam #scanner-container
+                 scanner.render(onScanSuccess, onScanFailure)
+                     .then(() => {
+                         console.log("Scanner render selesai.");
+                         // Tambahkan pemeriksaan kamera di sini jika perlu, tapi library biasanya menangani ini
+                     })
+                     .catch(err => {
+                         console.error("Error saat merender scanner:", err);
+                          // Cek apakah error karena kamera tidak ditemukan atau izin ditolak
+                         if (err.toLowerCase().includes('permission denied') || err.toLowerCase().includes('notfounderror')) {
+                              const title = "Kamera Error";
+                             const message = "Tidak bisa mengakses kamera. Pastikan Anda memberi izin pada browser dan tidak ada aplikasi lain yang menggunakan kamera.";
+                             const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
+                             showStatusModal(title, message, buttonsHtml);
+                         } else {
+                             const title = "Scanner Error";
+                             const message = `Gagal memulai scanner: ${err}`;
+                             const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
+                             showStatusModal(title, message, buttonsHtml);
+                         }
+                         stopScanner(); // Tutup modal jika render gagal
+                     });
+            }
+
+
             // 2. Listener untuk tombol "Scan Jual"
             scanForSellButton.addEventListener('click', () => {
-                scannerPurpose = 'sell';
-                scannerModal.style.display = 'flex';
-                if (html5QrcodeScanner) {
-                    Html5Qrcode.getCameras().then(devices => {
-                        if (devices && devices.length) {
-                             html5QrcodeScanner.render(onScanSuccess, onScanFailure);
-                        } else {
-                            // --- TAMBAHAN: Ganti alert dengan modal ---
-                            const title = "Kamera Error";
-                            const message = "Kamera tidak ditemukan atau izin untuk mengakses kamera ditolak.";
-                            const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
-                            showStatusModal(title, message, buttonsHtml);
-                            stopScanner();
-                            // --- AKHIR TAMBAHAN ---
-                        }
-                    }).catch(err => {
-                        console.error("Error saat mengakses kamera:", err);
-                        // --- TAMBAHAN: Ganti alert dengan modal ---
-                        const title = "Kamera Error";
-                        const message = "Tidak bisa mengakses kamera. Pastikan Anda memberi izin pada browser.";
-                        const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
-                        showStatusModal(title, message, buttonsHtml);
-                        stopScanner();
-                        // --- AKHIR TAMBAHAN ---
-                    });
-                } else {
-                    // --- TAMBAHAN: Ganti alert dengan modal ---
-                    const title = "Scanner Error";
-                    const message = "Scanner tidak bisa dimulai. Library gagal dimuat.";
-                    const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
-                    showStatusModal(title, message, buttonsHtml);
-                    // --- AKHIR TAMBAHAN ---
-                }
+                startScan('sell');
             });
 
             // 3. Listener untuk tombol "Scan Tambah"
             scanForAddButton.addEventListener('click', () => {
-                scannerPurpose = 'add';
-                scannerModal.style.display = 'flex';
-                if (html5QrcodeScanner) {
-                    Html5Qrcode.getCameras().then(devices => {
-                        if (devices && devices.length) {
-                             html5QrcodeScanner.render(onScanSuccess, onScanFailure);
-                        } else {
-                            // --- TAMBAHAN: Ganti alert dengan modal ---
-                            const title = "Kamera Error";
-                            const message = "Kamera tidak ditemukan atau izin untuk mengakses kamera ditolak.";
-                            const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
-                            showStatusModal(title, message, buttonsHtml);
-                            stopScanner();
-                            // --- AKHIR TAMBAHAN ---
-                        }
-                    }).catch(err => {
-                        console.error("Error saat mengakses kamera:", err);
-                        // --- TAMBAHAN: Ganti alert dengan modal ---
-                        const title = "Kamera Error";
-                        const message = "Tidak bisa mengakses kamera. Pastikan Anda memberi izin pada browser.";
-                        const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
-                        showStatusModal(title, message, buttonsHtml);
-                        stopScanner();
-                        // --- AKHIR TAMBAHAN ---
-                    });
-                } else {
-                    // --- TAMBAHAN: Ganti alert dengan modal ---
-                    const title = "Scanner Error";
-                    const message = "Scanner tidak bisa dimulai. Library gagal dimuat.";
-                    const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
-                    showStatusModal(title, message, buttonsHtml);
-                    // --- AKHIR TAMBAHAN ---
-                }
+                startScan('add');
             });
 
             // 4. Listener untuk tombol "Batal" di modal scanner
@@ -1596,3 +1668,4 @@
 </body>
 
 </html>
+
