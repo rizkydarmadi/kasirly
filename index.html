@@ -1254,6 +1254,17 @@
                 return;
             }
 
+            // --- TAMBAHAN: Cek duplikat ID di sisi klien ---
+            const existingProduct = allProducts.find(p => p.id && p.id.toString().toLowerCase() === productId.toLowerCase());
+            if (existingProduct) {
+                const title = "ID Duplikat";
+                const message = `Barcode/ID <strong>${productId}</strong> sudah digunakan untuk barang <strong>${existingProduct.name}</strong>. Silakan gunakan ID lain.`;
+                const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
+                showStatusModal(title, message, buttonsHtml);
+                return; 
+            }
+            // --- AKHIR TAMBAHAN ---
+
             addProductModal.style.display = 'none';
             loadingOverlay.style.display = 'flex';
             loadingOverlay.textContent = 'Menyimpan Barang...';
@@ -1313,24 +1324,29 @@
 
         // === Fungsi-fungsi untuk Scanner ===
 
+        // ==========================================================
+        // === FUNGSI INI TELAH DIPERBAIKI ===
+        // ==========================================================
         function onScanSuccess(decodedText, decodedResult) {
             console.log(`Scan berhasil: ${decodedText}`);
             
             // Hentikan scanner-nya
             try {
-                if (html5QrcodeScanner && html5QrcodeScanner.getState() === Html5QrcodeScannerState.SCANNING) {
+                // FIX: Hapus pengecekan .getState() yang error
+                if (html5QrcodeScanner) { 
                     html5QrcodeScanner.stop()
                         .then(() => {
                             console.log("Scanner dihentikan setelah sukses.");
                         })
                         .catch(err => {
+                            // Ini wajar jika scanner sudah distop
                             console.warn("Gagal menghentikan scanner setelah sukses.", err);
                         });
                 }
             } catch (e) {
-                console.warn("Gagal cek state scanner, mungkin sudah ditutup.", e);
+                console.warn("Error saat menghentikan scanner:", e);
             }
-           
+            
             scannerModal.style.display = 'none'; // Tutup modal
 
             if (scannerPurpose === 'sell') {
@@ -1358,24 +1374,27 @@
             // Biarkan kosong, tidak perlu log
         }
 
-        // Fungsi untuk tombol "Batal"
+        // ==========================================================
+        // === FUNGSI INI TELAH DIPERBAIKI ===
+        // ==========================================================
         function stopScanner() {
              try {
-                 if (html5QrcodeScanner && html5QrcodeScanner.getState() === Html5QrcodeScannerState.SCANNING) {
-                    html5QrcodeScanner.stop()
-                        .then(() => {
-                            console.log("Scanner dihentikan oleh tombol Batal.");
-                        })
-                        .catch(err => {
-                            console.warn("Gagal menghentikan scanner, mungkin sudah dihentikan.", err);
-                        });
-                }
-            } catch (e) {
+                // FIX: Hapus pengecekan .getState() yang error
+                if (html5QrcodeScanner) {
+                     html5QrcodeScanner.stop()
+                         .then(() => {
+                             console.log("Scanner dihentikan oleh tombol Batal.");
+                         })
+                         .catch(err => {
+                             console.warn("Gagal menghentikan scanner, mungkin sudah dihentikan.", err);
+                         });
+                 }
+             } catch (e) {
                  console.warn("Gagal cek state scanner saat membatalkan.", e);
-            }
-            scannerModal.style.display = 'none';
-            scannerPurpose = null;
-            searchBarEl.focus();
+             }
+             scannerModal.style.display = 'none';
+             scannerPurpose = null;
+             searchBarEl.focus();
         }
         
         // --- Event Listeners ---
@@ -1484,6 +1503,13 @@
                 console.error("Gagal inisialisasi html5QrcodeScanner:", err);
                 scanForSellButton.style.display = 'none';
                 scanForAddButton.style.display = 'none';
+                
+                // --- TAMBAHAN: Ganti alert dengan modal ---
+                const title = "Scanner Error";
+                const message = "Gagal memuat library scanner kamera. Tombol scan akan disembunyikan. Anda masih bisa mengetik manual.";
+                const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
+                showStatusModal(title, message, buttonsHtml);
+                // --- AKHIR TAMBAHAN ---
             }
             
             // 2. Listener untuk tombol "Scan Jual"
@@ -1495,16 +1521,31 @@
                         if (devices && devices.length) {
                              html5QrcodeScanner.render(onScanSuccess, onScanFailure);
                         } else {
-                            alert("Kamera tidak ditemukan atau izin ditolak.");
+                            // --- TAMBAHAN: Ganti alert dengan modal ---
+                            const title = "Kamera Error";
+                            const message = "Kamera tidak ditemukan atau izin untuk mengakses kamera ditolak.";
+                            const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
+                            showStatusModal(title, message, buttonsHtml);
                             stopScanner();
+                            // --- AKHIR TAMBAHAN ---
                         }
                     }).catch(err => {
                         console.error("Error saat mengakses kamera:", err);
-                        alert("Tidak bisa mengakses kamera. Pastikan Anda memberi izin.");
+                        // --- TAMBAHAN: Ganti alert dengan modal ---
+                        const title = "Kamera Error";
+                        const message = "Tidak bisa mengakses kamera. Pastikan Anda memberi izin pada browser.";
+                        const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
+                        showStatusModal(title, message, buttonsHtml);
                         stopScanner();
+                        // --- AKHIR TAMBAHAN ---
                     });
                 } else {
-                    alert("Scanner tidak bisa dimulai.");
+                    // --- TAMBAHAN: Ganti alert dengan modal ---
+                    const title = "Scanner Error";
+                    const message = "Scanner tidak bisa dimulai. Library gagal dimuat.";
+                    const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
+                    showStatusModal(title, message, buttonsHtml);
+                    // --- AKHIR TAMBAHAN ---
                 }
             });
 
@@ -1517,16 +1558,31 @@
                         if (devices && devices.length) {
                              html5QrcodeScanner.render(onScanSuccess, onScanFailure);
                         } else {
-                            alert("Kamera tidak ditemukan atau izin ditolak.");
+                            // --- TAMBAHAN: Ganti alert dengan modal ---
+                            const title = "Kamera Error";
+                            const message = "Kamera tidak ditemukan atau izin untuk mengakses kamera ditolak.";
+                            const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
+                            showStatusModal(title, message, buttonsHtml);
                             stopScanner();
+                            // --- AKHIR TAMBAHAN ---
                         }
                     }).catch(err => {
                         console.error("Error saat mengakses kamera:", err);
-                        alert("Tidak bisa mengakses kamera. Pastikan Anda memberi izin.");
+                        // --- TAMBAHAN: Ganti alert dengan modal ---
+                        const title = "Kamera Error";
+                        const message = "Tidak bisa mengakses kamera. Pastikan Anda memberi izin pada browser.";
+                        const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
+                        showStatusModal(title, message, buttonsHtml);
                         stopScanner();
+                        // --- AKHIR TAMBAHAN ---
                     });
                 } else {
-                    alert("Scanner tidak bisa dimulai.");
+                    // --- TAMBAHAN: Ganti alert dengan modal ---
+                    const title = "Scanner Error";
+                    const message = "Scanner tidak bisa dimulai. Library gagal dimuat.";
+                    const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
+                    showStatusModal(title, message, buttonsHtml);
+                    // --- AKHIR TAMBAHAN ---
                 }
             });
 
