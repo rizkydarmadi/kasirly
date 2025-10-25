@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kasir</title>
 
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <!-- Ganti library scanner -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 
     <style>
         * {
@@ -619,26 +620,39 @@
             position: relative; /* Diperlukan agar overlay bisa diposisikan absolut */
             width: 100%;
             max-width: 500px;
+            min-height: 200px; /* Beri tinggi minimum */
             margin: 10px auto 0 auto; /* Beri sedikit margin atas */
             border: 1px solid #ddd;
             border-radius: 8px;
             overflow: hidden;
-             background-color: #333; /* Latar belakang gelap jika video belum muncul */
+            background-color: #333; /* Latar belakang gelap */
         }
 
-        /* Pastikan video mengisi container */
-        #scanner-container video {
-            display: block; /* Hapus spasi ekstra di bawah video */
-            width: 100% !important;
-            height: auto !important;
+        /* CSS untuk div viewport QuaggaJS */
+        #interactive.viewport {
+            position: relative; /* Posisi relatif untuk elemen di dalamnya */
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        /* Style video dan canvas yang akan dibuat QuaggaJS */
+        #interactive.viewport video,
+        #interactive.viewport canvas {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: auto;
+            height: 100%; /* Buat video mengisi tinggi container */
+            transform: translate(-50%, -50%);
+            min-width: 100%; /* Pastikan video setidaknya selebar container */
+            min-height: 100%;
+        }
+        /* Canvas untuk drawing box Quagga bisa ditumpuk */
+        #interactive.viewport canvas.drawingBuffer {
+            z-index: 5;
+            pointer-events: none;
         }
         
-        /* === MODIFIKASI: Sembunyikan UI Bawaan Library === */
-        #scanner-container #html5-qrcode-header { display: none !important; }
-        #scanner-container .html5-qrcode-scanner-region { border: none !important; }
-        #scanner-container #html5-qrcode-scan-region > button[data-qr-scanner-stop-scanning="true"] { display: none !important; }
-        /* === AKHIR MODIFIKASI === */
-
         #scanner-modal .modal-actions {
             margin-top: 15px;
             grid-template-columns: 1fr; /* Hanya satu tombol "Batal" */
@@ -656,7 +670,7 @@
             justify-content: center;
             align-items: center;
             pointer-events: none; /* Agar tidak menghalangi interaksi */
-            z-index: 1; /* Pastikan di atas video */
+            z-index: 10; /* Pastikan di atas video & canvas quagga */
         }
 
         .scanner-window {
@@ -664,16 +678,12 @@
             max-width: 300px; /* Batas lebar maksimum */
             height: 150px; /* Tinggi area pemindaian (sesuaikan untuk barcode EAN) */
             position: relative;
-            /* Trik overlay: background gradient untuk area transparan, box-shadow untuk area gelap */
             box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.5); /* Overlay gelap di luar window */
             border-radius: 5px; /* Sedikit lengkungan */
-            /* Garis batas tipis bisa ditambahkan jika diinginkan:
-               border: 1px solid rgba(255, 255, 255, 0.3); */
         }
 
         .scanner-laser {
             position: absolute;
-            /* Posisi awal di atas */
             top: 10%;
             left: 5%;
             right: 5%;
@@ -711,7 +721,6 @@
         @keyframes scan-animation {
             0% { top: 10%; opacity: 1; }
             50% { top: 90%; opacity: 1; }
-             /* Jeda sedikit di bawah */
             60% { top: 90%; opacity: 1; }
             100% { top: 10%; opacity: 1; }
         }
@@ -857,9 +866,10 @@
     <div class="modal-overlay" id="scanner-modal">
         <div class="modal-content">
             <h3>Scan Barcode</h3>
+            <!-- Modifikasi: Tambahkan div #interactive untuk Quagga -->
             <div id="scanner-container">
-                 <!-- Kontainer untuk scanner library -->
-                 <!-- DIV BARU UNTUK OVERLAY -->
+                 <div id="interactive" class="viewport"></div> 
+                 <!-- Overlay tetap di sini agar tampil di atas #interactive -->
                  <div class="scanner-overlay">
                     <div class="scanner-window">
                         <div class="scanner-laser"></div>
@@ -870,7 +880,6 @@
                     </div>
                     <p class="scanner-instruction">Posisikan barcode di dalam area</p>
                 </div>
-                 <!-- AKHIR DIV BARU -->
             </div>
             <div class="modal-actions">
                 <button id="cancel-scan-button" class="modal-btn-secondary">Batal</button>
@@ -892,10 +901,9 @@
         let currentSearch = '';
         let lastTransactionData = { id: null, cart: [] };
 
-        // === BARU: Variabel untuk Scanner ===
-        let html5QrcodeScanner;
+        // Variabel untuk scanner QuaggaJS
         let scannerPurpose = null; // 'sell' atau 'add'
-        // === AKHIR BARU ===
+        let isQuaggaRunning = false; // Flag untuk status Quagga
 
 
         // --- Elemen DOM ---
@@ -927,13 +935,11 @@
         const addProductForm = document.getElementById('add-product-form');
         const cancelAddProductButton = document.getElementById('cancel-add-product-button');
         const categoryDatalist = document.getElementById('category-list');
-
-        // === BARU: Elemen DOM untuk Scanner ===
         const scannerModal = document.getElementById('scanner-modal');
         const scanForSellButton = document.getElementById('scan-for-sell-button');
         const scanForAddButton = document.getElementById('scan-for-add-button');
         const cancelScanButton = document.getElementById('cancel-scan-button');
-        // === AKHIR BARU ===
+        const scannerContainer = document.getElementById('scanner-container'); // Container untuk Quagga
 
 
         // --- Fungsi-Fungsi ---
@@ -976,8 +982,7 @@
 
         function hideStatusModal() {
             statusModal.style.display = 'none';
-            // Kembalikan fokus ke search bar hanya jika tidak ada modal lain yang aktif
-             if (addProductModal.style.display !== 'flex' && scannerModal.style.display !== 'flex') {
+            if (addProductModal.style.display !== 'flex' && scannerModal.style.display !== 'flex') {
                 searchBarEl.focus();
             }
         }
@@ -1004,7 +1009,6 @@
 
         function closeStatusModalOnError() {
              hideStatusModal();
-             // Jika error terjadi saat scan, kembalikan fokus ke search bar
             if (scannerModal.style.display !== 'flex') {
                  searchBarEl.focus();
              }
@@ -1342,7 +1346,6 @@
                 return;
             }
 
-            // --- TAMBAHAN: Cek duplikat ID di sisi klien ---
             const existingProduct = allProducts.find(p => p.id && p.id.toString().toLowerCase() === productId.toLowerCase());
             if (existingProduct) {
                 const title = "ID Duplikat";
@@ -1351,7 +1354,6 @@
                 showStatusModal(title, message, buttonsHtml);
                 return; 
             }
-            // --- AKHIR TAMBAHAN ---
 
             addProductModal.style.display = 'none';
             loadingOverlay.style.display = 'flex';
@@ -1409,31 +1411,114 @@
             }
         }
 
+        // ==========================================================
+        // === FUNGSI-FUNGSI BARU UNTUK QUAGGAJS SCANNER ===
+        // ==========================================================
 
-        // === Fungsi-fungsi untuk Scanner ===
+        function startQuaggaScanner(purpose) {
+            scannerPurpose = purpose;
+            scannerModal.style.display = 'flex';
 
-        function onScanSuccess(decodedText, decodedResult) {
-            console.log(`Scan berhasil: ${decodedText}`);
-            
-            // Hentikan scanner-nya
-            try {
-                if (html5QrcodeScanner) { 
-                    html5QrcodeScanner.stop()
-                        .then(() => {
-                            console.log("Scanner dihentikan setelah sukses.");
-                        })
-                        .catch(err => {
-                            console.warn("Gagal menghentikan scanner setelah sukses (mungkin sudah berhenti).", err);
-                        });
+            const quaggaConfig = {
+                inputStream: {
+                    name: "Live",
+                    type: "LiveStream",
+                    target: document.querySelector('#interactive'), // Targetkan div viewport
+                    constraints: {
+                        width: { min: 640 },
+                        height: { min: 480 },
+                        facingMode: "environment", // Prioritaskan kamera belakang
+                        aspectRatio: { min: 1, max: 2 }
+                    },
+                     singleChannel: false // true = grey scale, false = color
+                },
+                decoder: {
+                     readers: [
+                        "ean_reader", // Fokus utama
+                        "ean_8_reader",
+                        "code_128_reader", // Tambahkan Code 128
+                        "upc_reader",
+                        "upc_e_reader"
+                    ],
+                    debug: {
+                         drawBoundingBox: true,
+                         showFrequency: false,
+                         drawScanline: false,
+                         showPattern: false
+                    },
+                     multiple: false // Hanya deteksi satu barcode per frame
+                },
+                 locate: true, // Bantu deteksi lokasi barcode
+                numOfWorkers: navigator.hardwareConcurrency || 4, // Gunakan worker sesuai core CPU
+                 frequency: 10, // Frame per detik untuk diproses
+            };
+
+            Quagga.init(quaggaConfig, function(err) {
+                if (err) {
+                    console.error("QuaggaJS init error:", err);
+                    let message = `Gagal memulai scanner: ${err.message || err}`;
+                     if (err.name === 'NotAllowedError') {
+                         message = "Izin akses kamera ditolak. Mohon izinkan akses kamera pada browser.";
+                     } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                         message = "Kamera tidak ditemukan. Pastikan kamera terhubung dan tidak digunakan aplikasi lain.";
+                    } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+                         message = "Kamera sedang digunakan oleh aplikasi lain atau terjadi error pada kamera.";
+                     }
+                    
+                    showStatusModal("Scanner Error", message, `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`);
+                    stopQuaggaScanner(); // Pastikan modal tertutup
+                    return;
                 }
-            } catch (e) {
-                console.warn("Error saat mencoba menghentikan scanner:", e);
-            }
-            
-            scannerModal.style.display = 'none'; // Tutup modal
+                console.log("QuaggaJS initialized successfully.");
+                Quagga.start();
+                isQuaggaRunning = true;
+                console.log("QuaggaJS started.");
+            });
 
+             // --- Hapus listener lama dan tambahkan listener baru ---
+            Quagga.offDetected(quaggaOnDetected); // Hapus listener sebelumnya (jika ada)
+            Quagga.onDetected(quaggaOnDetected); // Tambahkan listener deteksi
+
+             // Opsional: Listener untuk memproses frame (bisa digunakan untuk debug)
+             // Quagga.onProcessed(function(result) {
+            //     var drawingCtx = Quagga.canvas.ctx.overlay,
+            //         drawingCanvas = Quagga.canvas.dom.overlay;
+            //     if (result) {
+            //         // Kosongkan canvas sebelum menggambar box baru
+            //         // drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.getAttribute("width")), parseInt(drawingCanvas.getAttribute("height")));
+            //         if (result.boxes) {
+            //             drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.getAttribute("width")), parseInt(drawingCanvas.getAttribute("height")));
+            //             result.boxes.filter(function (box) {
+            //                 return box !== result.box;
+            //             }).forEach(function (box) {
+            //                 Quagga.ImageDebug.drawPath(box, {x: 0, y: 1}, drawingCtx, {color: "green", lineWidth: 2});
+            //             });
+            //         }
+            //         if (result.box) {
+            //             Quagga.ImageDebug.drawPath(result.box, {x: 0, y: 1}, drawingCtx, {color: "#00F", lineWidth: 2});
+            //         }
+            //         if (result.codeResult && result.codeResult.code) {
+            //             // Quagga.ImageDebug.drawPath(result.line, {x: 'x', y: 'y'}, drawingCtx, {color: 'red', lineWidth: 3});
+            //         }
+            //     }
+            // });
+        }
+
+        function quaggaOnDetected(result) {
+            if (!result || !result.codeResult || !result.codeResult.code) {
+                 console.log("Deteksi tidak valid:", result);
+                return;
+            }
+
+            const code = result.codeResult.code;
+            console.log(`Barcode terdeteksi (${result.codeResult.format}): ${code}`);
+
+            // Hentikan Quagga SEGERA setelah deteksi berhasil
+            stopQuaggaScanner();
+
+            // Proses kode yang terdeteksi
             if (scannerPurpose === 'sell') {
-                const barcode = decodedText.trim();
+                const barcode = code.trim();
                 const product = allProducts.find(p => p.id && p.id.toString().toLowerCase() === barcode.toLowerCase());
 
                 if (product) {
@@ -1444,42 +1529,40 @@
                     const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
                     showStatusModal(title, message, buttonsHtml);
                 }
-
             } else if (scannerPurpose === 'add') {
-                document.getElementById('new-product-id').value = decodedText;
+                document.getElementById('new-product-id').value = code;
+                 // Fokus ke field berikutnya setelah scan
                 document.getElementById('new-product-name').focus();
             }
-            scannerPurpose = null;
-            // Kembalikan fokus ke search bar setelah modal ditutup
-            searchBarEl.focus(); 
-        }
 
-        function onScanFailure(error) {
-            // Biarkan kosong, tidak perlu log detail error pemindaian
-             // console.warn(`Code scan error = ${error}`);
-        }
-
-        function stopScanner() {
-             try {
-                if (html5QrcodeScanner) {
-                     html5QrcodeScanner.stop()
-                         .then(() => {
-                             console.log("Scanner dihentikan oleh tombol Batal/Error.");
-                         })
-                         .catch(err => {
-                             console.warn("Gagal menghentikan scanner (mungkin sudah berhenti).", err);
-                         });
-                 }
-             } catch (e) {
-                 console.warn("Error saat mencoba menghentikan scanner:", e);
+            scannerPurpose = null; // Reset purpose
+             // Fokuskan search bar jika tidak sedang mengisi form tambah barang
+             if (addProductModal.style.display !== 'flex') {
+                 searchBarEl.focus();
              }
-             scannerModal.style.display = 'none';
-             scannerPurpose = null;
-             // Kembalikan fokus ke search bar setelah modal ditutup
-             searchBarEl.focus();
+        }
+
+        function stopQuaggaScanner() {
+            if (isQuaggaRunning) {
+                 Quagga.offDetected(quaggaOnDetected); // Hapus listener
+                 // Quagga.offProcessed(); // Hapus listener proses jika digunakan
+                Quagga.stop();
+                isQuaggaRunning = false;
+                console.log("QuaggaJS stopped.");
+            }
+            scannerModal.style.display = 'none'; // Selalu tutup modal
+             // Kosongkan viewport agar video hilang
+            const interactiveElement = document.getElementById('interactive');
+            if(interactiveElement) interactiveElement.innerHTML = ''; 
+
+            scannerPurpose = null; // Reset purpose
+             // Fokuskan search bar jika tidak sedang mengisi form tambah barang
+             if (addProductModal.style.display !== 'flex') {
+                 searchBarEl.focus();
+             }
         }
         
-        // --- Event Listeners ---
+        // --- Event Listeners (Update untuk Scanner) ---
         searchBarEl.addEventListener('input', (e) => filterBySearch(e.target.value));
         checkoutButton.addEventListener('click', showCheckoutModal);
         resetCartButton.addEventListener('click', resetCart);
@@ -1504,13 +1587,13 @@
             if (target.classList.contains('modal-qty-plus')) {
                 const id = target.dataset.id;
                 addToCart(id);
-                showCheckoutModal(); // Perbarui tampilan modal setelah tambah
+                showCheckoutModal();
                 updateCartSummary();
             }
             if (target.classList.contains('modal-qty-minus')) {
                 const id = target.dataset.id;
                 decrementCartItem(id);
-                showCheckoutModal(); // Perbarui tampilan modal setelah kurang
+                showCheckoutModal();
                 updateCartSummary();
             }
         });
@@ -1528,13 +1611,23 @@
 
         addProductForm.addEventListener('submit', handleSaveProduct);
 
+        // --- Event Listener untuk tombol scan (panggil fungsi Quagga) ---
+        scanForSellButton.addEventListener('click', () => {
+             startQuaggaScanner('sell');
+        });
+
+        scanForAddButton.addEventListener('click', () => {
+             startQuaggaScanner('add');
+        });
+
+        cancelScanButton.addEventListener('click', () => {
+             stopQuaggaScanner();
+        });
 
         // --- Inisialisasi Aplikasi ---
         document.addEventListener('DOMContentLoaded', () => {
             fetchProducts();
             updateCartSummary();
-            
-            // Fokuskan search bar saat awal load
             searchBarEl.focus(); 
 
             // --- KODE BARCODE SCANNING (USB/KEYBOARD) ---
@@ -1548,8 +1641,8 @@
 
                     if (product) {
                         addToCart(product.id);
-                        searchBarEl.value = ''; // Kosongkan search bar setelah scan berhasil
-                        filterBySearch(''); // Reset filter pencarian
+                        searchBarEl.value = ''; 
+                        filterBySearch('');
                     } else {
                         const title = "Barang Tidak Ditemukan";
                         const message = `Barang dengan barcode/ID <strong>${barcode}</strong> tidak ditemukan.`;
@@ -1559,109 +1652,7 @@
                 }
             });
 
-            // === Inisialisasi dan Event Listener untuk SCANNER KAMERA ===
-
-            // 1. Inisialisasi object scanner (dilakukan satu kali)
-             // Variabel untuk menyimpan instance scanner
-             let scannerInstance = null;
-
-            function initializeScanner() {
-                 // Hanya inisialisasi jika belum ada instance
-                 if (!scannerInstance) {
-                     try {
-                         scannerInstance = new Html5QrcodeScanner(
-                             "scanner-container", 
-                             {
-                                 fps: 15, // Coba tingkatkan FPS sedikit
-                                 // Hapus qrbox untuk full region scan
-                                 // qrbox: { width: 250, height: 250 },
-                                 experimentalFeatures: {
-                                     useBarCodeDetectorIfSupported: true // Coba gunakan BarcodeDetector API jika ada
-                                 },
-                                 rememberLastUsedCamera: true, // Ingat kamera terakhir
-                                 supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
-                                 formatsToSupport: [ 
-                                     Html5QrcodeSupportedFormats.EAN_13,
-                                     Html5QrcodeSupportedFormats.CODE_128, // Tambahkan format umum lain
-                                     Html5QrcodeSupportedFormats.EAN_8,
-                                     Html5QrcodeSupportedFormats.UPC_A,
-                                     Html5QrcodeSupportedFormats.UPC_E
-                                     // Html5QrcodeSupportedFormats.QR_CODE // Aktifkan jika perlu scan QR juga
-                                 ]
-                             }, 
-                             /* verbose= */ false
-                         );
-                     } catch (err) {
-                         console.error("Gagal inisialisasi html5QrcodeScanner:", err);
-                         scannerInstance = null; // Set ke null jika gagal
-                         scanForSellButton.style.display = 'none'; // Sembunyikan tombol jika gagal init
-                         scanForAddButton.style.display = 'none';
-
-                         const title = "Scanner Error";
-                         const message = "Gagal memuat library scanner kamera. Tombol scan tidak akan berfungsi. Anda masih bisa mengetik manual.";
-                         const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
-                         showStatusModal(title, message, buttonsHtml);
-                     }
-                 }
-                 return scannerInstance; // Kembalikan instance (atau null jika gagal)
-            }
-
-
-            // Fungsi untuk memulai scan
-            function startScan(purpose) {
-                 const scanner = initializeScanner(); // Pastikan scanner sudah diinisialisasi
-                 if (!scanner) {
-                     console.error("Scanner tidak terinisialisasi, tidak bisa memulai scan.");
-                     const title = "Scanner Error";
-                     const message = "Scanner tidak bisa dimulai karena gagal dimuat.";
-                     const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
-                     showStatusModal(title, message, buttonsHtml);
-                     return;
-                 }
-
-                 scannerPurpose = purpose;
-                 scannerModal.style.display = 'flex';
-
-                 // Render scanner (meminta izin kamera jika perlu)
-                 // Ini akan menampilkan UI scanner library di dalam #scanner-container
-                 scanner.render(onScanSuccess, onScanFailure)
-                     .then(() => {
-                         console.log("Scanner render selesai.");
-                         // Tambahkan pemeriksaan kamera di sini jika perlu, tapi library biasanya menangani ini
-                     })
-                     .catch(err => {
-                         console.error("Error saat merender scanner:", err);
-                          // Cek apakah error karena kamera tidak ditemukan atau izin ditolak
-                         if (err.toLowerCase().includes('permission denied') || err.toLowerCase().includes('notfounderror')) {
-                              const title = "Kamera Error";
-                             const message = "Tidak bisa mengakses kamera. Pastikan Anda memberi izin pada browser dan tidak ada aplikasi lain yang menggunakan kamera.";
-                             const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
-                             showStatusModal(title, message, buttonsHtml);
-                         } else {
-                             const title = "Scanner Error";
-                             const message = `Gagal memulai scanner: ${err}`;
-                             const buttonsHtml = `<button class="modal-btn-primary" onclick="closeStatusModalOnError()" style="grid-column: 1 / -1;">Tutup</button>`;
-                             showStatusModal(title, message, buttonsHtml);
-                         }
-                         stopScanner(); // Tutup modal jika render gagal
-                     });
-            }
-
-
-            // 2. Listener untuk tombol "Scan Jual"
-            scanForSellButton.addEventListener('click', () => {
-                startScan('sell');
-            });
-
-            // 3. Listener untuk tombol "Scan Tambah"
-            scanForAddButton.addEventListener('click', () => {
-                startScan('add');
-            });
-
-            // 4. Listener untuk tombol "Batal" di modal scanner
-            cancelScanButton.addEventListener('click', () => {
-                stopScanner();
-            });
+            // Tidak perlu inisialisasi scanner di sini lagi, dilakukan saat tombol ditekan
             
         }); 
     </script>
